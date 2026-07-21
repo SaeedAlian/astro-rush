@@ -15,6 +15,7 @@ find_package(glm REQUIRED)
 set(SRC_FILES
     src/main.cpp
     src/shader.cpp
+    src/mesh.cpp
 )
 
 add_executable(endless-runner ${SRC_FILES})
