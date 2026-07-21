@@ -1,7 +1,7 @@
 BasedOnStyle: LLVM
 
 IndentWidth: 2
-ColumnLimit: 100
+ColumnLimit: 70
 
 Cpp11BracedListStyle: true
 
