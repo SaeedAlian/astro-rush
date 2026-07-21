@@ -111,6 +111,63 @@ void Mesh::draw() const {
 }
 
 /*
+ * Default static method to create a cube.
+ *
+ * @param size
+ *
+ * @return cube mesh
+ */
+Mesh Mesh::createCube(float size) {
+  float h = size * 0.5f;
+
+  // clang-format off
+  std::vector<float> vertices = {
+      // position       // normal
+      // front 
+      -h, -h,  h,       0, 0, 1,
+       h, -h,  h,       0, 0, 1,
+       h,  h,  h,       0, 0, 1,
+      -h,  h,  h,       0, 0, 1,
+      // back 
+       h, -h, -h,       0, 0, -1,
+      -h, -h, -h,       0, 0, -1,
+      -h,  h, -h,       0, 0, -1,
+       h,  h, -h,       0, 0, -1,
+      // left
+      -h, -h, -h,  -    1, 0, 0,
+      -h, -h,  h,  -    1, 0, 0,
+      -h,  h,  h,  -    1, 0, 0,
+      -h,  h, -h,  -    1, 0, 0,
+      // right
+       h, -h,  h,       1, 0, 0,
+       h, -h, -h,       1, 0, 0,
+       h,  h, -h,       1, 0, 0,
+       h,  h,  h,       1, 0, 0,
+      // top 
+      -h,  h,  h,       0, 1, 0,
+       h,  h,  h,       0, 1, 0,
+       h,  h, -h,       0, 1, 0,
+      -h,  h, -h,       0, 1, 0,
+      // bottom
+      -h, -h, -h,       0, -1, 0,
+       h, -h, -h,       0, -1, 0,
+       h, -h,  h,       0, -1, 0,
+      -h, -h,  h,       0, -1, 0,
+  };
+  std::vector<unsigned int> indices = {
+      0, 1, 2,       2, 3, 0,        // front
+      4, 5, 6,       6, 7, 4,        // back
+      8, 9, 10,      10, 11, 8,      // left
+      12, 13, 14,    14, 15, 12,     // right
+      16, 17, 18,    18, 19, 16,     // top
+      20, 21, 22,    22, 23, 20,     // bottom
+  };
+  // clang-format on
+
+  return Mesh(vertices, indices);
+}
+
+/*
  * Default static method to create a plane.
  *
  * @param width
