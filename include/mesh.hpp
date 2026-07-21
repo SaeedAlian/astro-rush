@@ -9,6 +9,11 @@ public:
        const std::vector<unsigned int> &idxs);
   ~Mesh();
 
+  Mesh(const Mesh &) = delete;
+  Mesh &operator=(const Mesh &) = delete;
+  Mesh(Mesh &&other) noexcept;
+  Mesh &operator=(Mesh &&other) noexcept;
+
   void draw() const;
 
   static Mesh createPlane(float width, float depth);

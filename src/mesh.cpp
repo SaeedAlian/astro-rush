@@ -26,8 +26,9 @@ Mesh::Mesh(const std::vector<float> &verts,
                verts.data(), GL_STATIC_DRAW);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, idxs.size() * sizeof(float),
-               idxs.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+               idxs.size() * sizeof(unsigned int), idxs.data(),
+               GL_STATIC_DRAW);
 
   // position (location 0), normal (location 1)
   unsigned int stride = 6 * sizeof(float);
@@ -48,6 +49,56 @@ Mesh::~Mesh() {
   glDeleteVertexArrays(1, &VAO);
   glDeleteBuffers(1, &VBO);
   glDeleteBuffers(1, &EBO);
+}
+
+/*
+ * Move-Constructs a Mesh, so that when Mesh is created
+ * by static functions like createPlane, createCube ...,
+ * it won't delete the Mesh itself by calling the destructor
+ * of the temporary result returned by these functions.
+ *
+ * Static function call
+ * -> returns a temp Mesh class (rvalue)
+ * -> moves the rvalue to lvalue
+ * -> move constructor will be called
+ * -> the temporary rvalue properties will be reset
+ * -> destructor of rvalue will be called
+ * -> because the properties have been resetted, it won't destruct
+ * the lvalue
+ *
+ * @param other | the Mesh being moved from (left empty afterward)
+ */
+Mesh::Mesh(Mesh &&other) noexcept
+    : VAO(other.VAO), VBO(other.VBO), EBO(other.EBO),
+      idxcnt(other.idxcnt) {
+  other.VAO = other.VBO = other.EBO = 0;
+  other.idxcnt = 0;
+}
+
+/*
+ * The reverse operation of move constructor (move assignment).
+ * This will moves the ownership of values from other Mesh
+ * to this Mesh, and leaves the other in an empty state.
+ *
+ * @param other | the Mesh being moved from (left empty afterward)
+ *
+ * @return reference to this Mesh, for assignment chaining
+ */
+Mesh &Mesh::operator=(Mesh &&other) noexcept {
+  if (this != &other) {
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+
+    VAO = other.VAO;
+    VBO = other.VBO;
+    EBO = other.EBO;
+    idxcnt = other.idxcnt;
+
+    other.VAO = other.VBO = other.EBO = 0;
+    other.idxcnt = 0;
+  }
+  return *this;
 }
 
 /*
