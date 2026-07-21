@@ -177,6 +177,30 @@ src/mesh.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/mesh.cpp.s
 .PHONY : src/mesh.cpp.s
 
+src/object.o: src/object.cpp.o
+.PHONY : src/object.o
+
+# target to build an object file
+src/object.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/object.cpp.o
+.PHONY : src/object.cpp.o
+
+src/object.i: src/object.cpp.i
+.PHONY : src/object.i
+
+# target to preprocess a source file
+src/object.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/object.cpp.i
+.PHONY : src/object.cpp.i
+
+src/object.s: src/object.cpp.s
+.PHONY : src/object.s
+
+# target to generate assembly for a file
+src/object.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/object.cpp.s
+.PHONY : src/object.cpp.s
+
 src/shader.o: src/shader.cpp.o
 .PHONY : src/shader.o
 
@@ -216,6 +240,9 @@ help:
 	@echo "... src/mesh.o"
 	@echo "... src/mesh.i"
 	@echo "... src/mesh.s"
+	@echo "... src/object.o"
+	@echo "... src/object.i"
+	@echo "... src/object.s"
 	@echo "... src/shader.o"
 	@echo "... src/shader.i"
 	@echo "... src/shader.s"

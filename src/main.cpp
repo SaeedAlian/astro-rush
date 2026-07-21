@@ -1,4 +1,5 @@
 #include "mesh.hpp"
+#include "object.hpp"
 #include "shader.hpp"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -7,7 +8,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
-#include <string>
 
 int main() {
   if (!glfwInit()) {
@@ -40,6 +40,8 @@ int main() {
   Shader shader =
       Shader("shaders/vertex.glsl", "shaders/fragment.glsl");
 
+  Object road = Object(&plane, &shader);
+
   glm::vec3 cameraPosition(0.0f, 10.0f, 10.0f);
 
   glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
@@ -50,7 +52,7 @@ int main() {
   glm::mat4 projection = glm::perspective(
       glm::radians(90.0f), 800.0f / 600.0f, 0.1f, 200.0f);
 
-  glm::mat4 model = glm::mat4(1.0f);
+  road.color = glm::vec3(0.45, 0.15, 0.15);
 
   while (!glfwWindowShouldClose(window)) {
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
@@ -63,12 +65,7 @@ int main() {
 
     glEnable(GL_DEPTH_TEST);
 
-    shader.use();
-    shader.setMat4("model", model);
-    shader.setMat4("view", view);
-    shader.setMat4("projection", projection);
-
-    plane.draw();
+    road.draw(view, projection);
 
     glfwSwapBuffers(window);
 
