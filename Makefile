@@ -129,6 +129,54 @@ endless-runner/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/build
 .PHONY : endless-runner/fast
 
+src/collision.o: src/collision.cpp.o
+.PHONY : src/collision.o
+
+# target to build an object file
+src/collision.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/collision.cpp.o
+.PHONY : src/collision.cpp.o
+
+src/collision.i: src/collision.cpp.i
+.PHONY : src/collision.i
+
+# target to preprocess a source file
+src/collision.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/collision.cpp.i
+.PHONY : src/collision.cpp.i
+
+src/collision.s: src/collision.cpp.s
+.PHONY : src/collision.s
+
+# target to generate assembly for a file
+src/collision.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/collision.cpp.s
+.PHONY : src/collision.cpp.s
+
+src/game.o: src/game.cpp.o
+.PHONY : src/game.o
+
+# target to build an object file
+src/game.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/game.cpp.o
+.PHONY : src/game.cpp.o
+
+src/game.i: src/game.cpp.i
+.PHONY : src/game.i
+
+# target to preprocess a source file
+src/game.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/game.cpp.i
+.PHONY : src/game.cpp.i
+
+src/game.s: src/game.cpp.s
+.PHONY : src/game.s
+
+# target to generate assembly for a file
+src/game.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/game.cpp.s
+.PHONY : src/game.cpp.s
+
 src/main.o: src/main.cpp.o
 .PHONY : src/main.o
 
@@ -201,6 +249,30 @@ src/object.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/object.cpp.s
 .PHONY : src/object.cpp.s
 
+src/player.o: src/player.cpp.o
+.PHONY : src/player.o
+
+# target to build an object file
+src/player.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/player.cpp.o
+.PHONY : src/player.cpp.o
+
+src/player.i: src/player.cpp.i
+.PHONY : src/player.i
+
+# target to preprocess a source file
+src/player.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/player.cpp.i
+.PHONY : src/player.cpp.i
+
+src/player.s: src/player.cpp.s
+.PHONY : src/player.s
+
+# target to generate assembly for a file
+src/player.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/player.cpp.s
+.PHONY : src/player.cpp.s
+
 src/shader.o: src/shader.cpp.o
 .PHONY : src/shader.o
 
@@ -234,6 +306,12 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... endless-runner"
+	@echo "... src/collision.o"
+	@echo "... src/collision.i"
+	@echo "... src/collision.s"
+	@echo "... src/game.o"
+	@echo "... src/game.i"
+	@echo "... src/game.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
@@ -243,6 +321,9 @@ help:
 	@echo "... src/object.o"
 	@echo "... src/object.i"
 	@echo "... src/object.s"
+	@echo "... src/player.o"
+	@echo "... src/player.i"
+	@echo "... src/player.s"
 	@echo "... src/shader.o"
 	@echo "... src/shader.i"
 	@echo "... src/shader.s"

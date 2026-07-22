@@ -17,6 +17,9 @@ set(SRC_FILES
     src/shader.cpp
     src/mesh.cpp
     src/object.cpp
+    src/collision.cpp
+    src/player.cpp
+    src/game.cpp
 )
 
 add_executable(endless-runner ${SRC_FILES})
