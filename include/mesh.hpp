@@ -17,6 +17,7 @@ public:
   void draw() const;
 
   static Mesh createCube(float size);
+  static Mesh createBox(float width, float height, float depth);
   static Mesh createPlane(float width, float depth);
 
 private:

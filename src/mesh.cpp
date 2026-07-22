@@ -168,6 +168,67 @@ Mesh Mesh::createCube(float size) {
 }
 
 /*
+ * Default static method to create a box.
+ *
+ * @param width
+ * @param height
+ * @param depth
+ *
+ * @return box mesh
+ */
+Mesh Mesh::createBox(float width, float height, float depth) {
+  float w = width * 0.5f;
+  float h = height * 0.5f;
+  float d = depth * 0.5f;
+
+  // clang-format off
+  std::vector<float> vertices = {
+      // position       // normal
+      // front 
+      -w, -h,  d,       0, 0, 1,
+       w, -h,  d,       0, 0, 1,
+       w,  h,  d,       0, 0, 1,
+      -w,  h,  d,       0, 0, 1,
+      // back 
+       w, -h, -d,       0, 0, -1,
+      -w, -h, -d,       0, 0, -1,
+      -w,  h, -d,       0, 0, -1,
+       w,  h, -d,       0, 0, -1,
+      // left
+      -w, -h, -d,  -    1, 0, 0,
+      -w, -h,  d,  -    1, 0, 0,
+      -w,  h,  d,  -    1, 0, 0,
+      -w,  h, -d,  -    1, 0, 0,
+      // right
+       w, -h,  d,       1, 0, 0,
+       w, -h, -d,       1, 0, 0,
+       w,  h, -d,       1, 0, 0,
+       w,  h,  d,       1, 0, 0,
+      // top 
+      -w,  h,  d,       0, 1, 0,
+       w,  h,  d,       0, 1, 0,
+       w,  h, -d,       0, 1, 0,
+      -w,  h, -d,       0, 1, 0,
+      // bottom
+      -w, -h, -d,       0, -1, 0,
+       w, -h, -d,       0, -1, 0,
+       w, -h,  d,       0, -1, 0,
+      -w, -h,  d,       0, -1, 0,
+  };
+  std::vector<unsigned int> indices = {
+      0, 1, 2,       2, 3, 0,        // front
+      4, 5, 6,       6, 7, 4,        // back
+      8, 9, 10,      10, 11, 8,      // left
+      12, 13, 14,    14, 15, 12,     // right
+      16, 17, 18,    18, 19, 16,     // top
+      20, 21, 22,    22, 23, 20,     // bottom
+  };
+  // clang-format on
+
+  return Mesh(vertices, indices);
+}
+
+/*
  * Default static method to create a plane.
  *
  * @param width
