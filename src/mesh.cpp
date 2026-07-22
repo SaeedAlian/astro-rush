@@ -1,4 +1,4 @@
-#include <mesh.hpp>
+#include "mesh.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
