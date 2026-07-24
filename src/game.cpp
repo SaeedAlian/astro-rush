@@ -178,8 +178,8 @@ void Game::render() {
   auto playerPos = player->getObject().pos;
 
   glm::vec3 cameraPos =
-      glm::vec3(0.0f, 0.0f, playerPos.z) + cameraOffset;
-  glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, playerPos.z) +
+      glm::vec3(playerPos.x, 0.0f, playerPos.z) + cameraOffset;
+  glm::vec3 cameraTarget = glm::vec3(playerPos.x, 0.0f, playerPos.z) +
                            glm::vec3(0.0f, 1.0f, -5.0f);
   glm::mat4 view =
       glm::lookAt(cameraPos, cameraTarget, glm::vec3(0, 1, 0));

@@ -63,7 +63,7 @@ private:
   const float roadWidth;       // the full width of the road
   const float roadStrafeLimit; // keep player on the road
 
-  glm::vec3 cameraOffset{0.0f, 6.0f, 7.0f};
+  glm::vec3 cameraOffset{0.0f, 3.0f, 7.0f};
 
   float deltaTime = 0.0f;
   float lastFrameTime = 0.0f;
