@@ -1,9 +1,9 @@
 #include "player.hpp"
 
 Player::Player(const PlayerOptions options, Shader *shader,
-               const float laneLimit)
+               const float strafeLimit)
     : opts(options), groundY(options.size * 0.5f),
-      laneLimit(laneLimit), moveVel(options.initMoveVelocity),
+      strafeLimit(strafeLimit), moveVel(options.initMoveVelocity),
       vertVel(0.0f), jumpAccel(options.jumpAccelerationFactor *
                                options.initVerticalAcceleration),
       fallAccel(options.fallAccelerationFactor *
@@ -29,15 +29,15 @@ BoxCollider Player::getCollider() const {
 
 void Player::moveRight(float deltaTime) {
   x += strafeVel * deltaTime;
-  if (x > laneLimit) {
-    x = laneLimit;
+  if (x > strafeLimit) {
+    x = strafeLimit;
   }
 }
 
 void Player::moveLeft(float deltaTime) {
   x -= strafeVel * deltaTime;
-  if (x < -laneLimit) {
-    x = -laneLimit;
+  if (x < -strafeLimit) {
+    x = -strafeLimit;
   }
 }
 

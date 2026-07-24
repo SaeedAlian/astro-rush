@@ -12,7 +12,10 @@
 #include <memory>
 
 Game::Game(GameOptions opts)
-    : title(opts.title), width(opts.width), height(opts.height) {
+    : title(opts.title), width(opts.width), height(opts.height),
+      roadWidth(GAME_LANE_COUNT * GAME_LANE_WIDTH),
+      roadStrafeLimit((GAME_LANE_WIDTH * GAME_LANE_COUNT * 0.5f) -
+                      (GAME_PLAYER_SIZE * 0.5f)) {
 
   if (initialize() != GAME_INIT_SUCCESS)
     return;
@@ -68,29 +71,29 @@ int Game::initialize() {
 void Game::initPlayer() {
   PlayerOptions opts;
 
-  opts.initMoveVelocity = 20.0f;
-  opts.initStrafeVelocity = 15.0f;
+  opts.initMoveVelocity = GAME_PLAYER_INIT_MOVE_VELOCITY;
+  opts.initStrafeVelocity = GAME_PLAYER_INIT_STRAFE_VELOCITY;
+  opts.initVerticalAcceleration = GAME_PLAYER_INIT_VERTICAL_ACCEL;
+  opts.jumpAccelerationFactor = GAME_PLAYER_JUMP_ACCEL_FACTOR;
+  opts.fallAccelerationFactor = GAME_PLAYER_FALL_ACCEL_FACTOR;
+  opts.jumpHeight = GAME_PLAYER_JUMP_HEIGHT;
+  opts.size = GAME_PLAYER_SIZE;
 
-  opts.initVerticalAcceleration = 10.0f;
-  opts.jumpAccelerationFactor = 5.0f;
-  opts.fallAccelerationFactor = 3.0f;
-
-  opts.jumpHeight = 1.5f;
-  opts.size = 1.5f;
-
-  player = std::make_unique<Player>(opts, shader.get(), laneLimit);
+  player =
+      std::make_unique<Player>(opts, shader.get(), roadStrafeLimit);
 }
 
 void Game::initRoad() {
   roadSegmentMesh = std::make_unique<Mesh>(
-      Mesh::createPlane(roadWidth, roadSegLen));
+      Mesh::createPlane(roadWidth, GAME_ROAD_SEGMENT_LENGTH));
 
-  for (int i = 0; i < roadSegCnt; ++i) {
+  for (int i = 0; i < GAME_ROAD_SEGMENT_COUNT; ++i) {
     auto segment =
         std::make_unique<Object>(roadSegmentMesh.get(), shader.get());
 
     segment->pos =
-        glm::vec3(0.0f, 0.0f, -static_cast<float>(i) * roadSegLen);
+        glm::vec3(0.0f, 0.0f,
+                  -static_cast<float>(i) * GAME_ROAD_SEGMENT_LENGTH);
     segment->color = (i % 2 == 0) ? glm::vec3(0.25f, 0.25f, 0.28f)
                                   : glm::vec3(0.3f, 0.3f, 0.33f);
 
@@ -99,11 +102,13 @@ void Game::initRoad() {
 }
 
 void Game::recycleRoadSegments() {
-  float recycleThreshold = player->getObject().pos.z + roadSegLen;
+  float recycleThreshold =
+      player->getObject().pos.z + GAME_ROAD_SEGMENT_LENGTH;
 
   for (auto &segment : roadSegments) {
     if (segment->pos.z > recycleThreshold) {
-      segment->pos.z -= roadSegCnt * roadSegLen;
+      segment->pos.z -=
+          GAME_ROAD_SEGMENT_COUNT * GAME_ROAD_SEGMENT_LENGTH;
     }
   }
 }

@@ -12,6 +12,21 @@
 #define GAME_INIT_FAILED -1
 #define GAME_INIT_SUCCESS 1
 
+#define GAME_LANE_COUNT 3
+#define GAME_LANE_WIDTH 2.5f
+
+#define GAME_PLAYER_SIZE 1.5f
+#define GAME_PLAYER_INIT_MOVE_VELOCITY 20.0f
+#define GAME_PLAYER_INIT_STRAFE_VELOCITY 15.0f
+#define GAME_PLAYER_INIT_VERTICAL_ACCEL 10.0f
+#define GAME_PLAYER_JUMP_ACCEL_FACTOR 5.0f
+#define GAME_PLAYER_FALL_ACCEL_FACTOR 4.0f
+#define GAME_PLAYER_JUMP_HEIGHT 1.5f
+
+
+#define GAME_ROAD_SEGMENT_COUNT 15
+#define GAME_ROAD_SEGMENT_LENGTH 30.0f
+
 struct GameOptions {
   const char *title = "Endless Runner";
   unsigned int width = 1920;
@@ -29,13 +44,8 @@ private:
   const unsigned int width, height;
   const char *title;
 
-  const int roadSegCnt =
-      15; // the number of segments of the road in each frame
-  const float roadWidth = 10.0f; // the full width of the road
-  const float roadSegLen =
-      30.0f; // length of each segment of the road
-  const float laneLimit =
-      (10.0f * 0.5f) - (1.5 * 0.5f); // keep player on the road
+  const float roadWidth;       // the full width of the road
+  const float roadStrafeLimit; // keep player on the road
 
   glm::vec3 cameraOffset{0.0f, 6.0f, 7.0f};
 

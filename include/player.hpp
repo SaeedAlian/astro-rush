@@ -28,7 +28,7 @@ struct PlayerOptions {
 class Player {
 public:
   Player(const PlayerOptions options, Shader *shader,
-         const float laneLimit);
+         const float strafeLimit);
 
   void moveLeft(float deltaTime);
   void moveRight(float deltaTime);
@@ -45,7 +45,7 @@ public:
 
 private:
   const PlayerOptions opts;
-  const float groundY, laneLimit;
+  const float groundY, strafeLimit;
   float moveVel, vertVel, jumpAccel, fallAccel, strafeVel, x, y;
 
   PlayerStatus status = PlayerStatus::ON_GROUND;
