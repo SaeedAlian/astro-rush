@@ -10,9 +10,9 @@ bool boxAndBox(const BoxCollider &a, const BoxCollider &b) {
   glm::vec3 bMin = b.getMin();
   glm::vec3 bMax = b.getMax();
 
-  return (aMin.x <= bMax.x && aMax.x >= bMin.x) &&
-         (aMin.y <= bMax.y && aMax.y >= bMin.y) &&
-         (aMin.z <= bMax.z && aMax.z >= bMin.z);
+  return (aMin.x < bMax.x && aMax.x > bMin.x) &&
+         (aMin.y < bMax.y && aMax.y > bMin.y) &&
+         (aMin.z < bMax.z && aMax.z > bMin.z);
 }
 
 }; // namespace
