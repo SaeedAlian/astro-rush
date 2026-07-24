@@ -19,6 +19,8 @@ set(SRC_FILES
     src/object.cpp
     src/collision.cpp
     src/player.cpp
+    src/obstacle.cpp
+    src/obstacle-spawner.cpp
     src/game.cpp
 )
 

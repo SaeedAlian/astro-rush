@@ -1,6 +1,7 @@
 #include "game.hpp"
 #include "mesh.hpp"
 #include "object.hpp"
+#include "obstacle-spawner.hpp"
 #include "shader.hpp"
 
 #include <GL/glew.h>
@@ -27,6 +28,7 @@ Game::Game(GameOptions opts)
 
   initPlayer();
   initRoad();
+  initObstacles();
 }
 
 Game::~Game() {
@@ -101,6 +103,42 @@ void Game::initRoad() {
   }
 }
 
+void Game::initObstacles() {
+  ObstacleOptions obstacleOpts;
+  ObstacleSpawnOptions spawnOpts;
+
+  obstacleOpts.obstacleDepth = GAME_OBSTACLE_DEPTH;
+  obstacleOpts.obstacleHeight = GAME_OBSTACLE_HEIGHT;
+  obstacleOpts.obstaclePadding = GAME_OBSTACLE_PADDING;
+  obstacleOpts.bigObstacleHeightMultiplier =
+      GAME_OBSTACLE_BIG_HEIGHT_MULTIPLIER;
+  obstacleOpts.bigObstacleDepthMultiplier =
+      GAME_OBSTACLE_BIG_DEPTH_MULTIPLIER;
+
+  spawnOpts.initNextSpawnZ = GAME_OBSTACLE_INIT_NEXT_SPAWN_Z;
+  spawnOpts.spawnSafeMarginZ = GAME_SPAWN_SAFE_MARGIN_Z;
+
+  spawnOpts.minSpawnIntervalEasiest =
+      GAME_OBSTACLE_MIN_SPAWN_INTERVAL_EASY;
+  spawnOpts.maxSpawnIntervalEasiest =
+      GAME_OBSTACLE_MAX_SPAWN_INTERVAL_EASY;
+
+  spawnOpts.minSpawnIntervalHardest =
+      GAME_OBSTACLE_MIN_SPAWN_INTERVAL_HARD;
+  spawnOpts.maxSpawnIntervalHardest =
+      GAME_OBSTACLE_MAX_SPAWN_INTERVAL_HARD;
+
+  spawnOpts.rampDuration = GAME_DIFFICULTY_RAMP_DURATION;
+  spawnOpts.laneCount = GAME_LANE_COUNT;
+  spawnOpts.laneWidth = GAME_LANE_WIDTH;
+  spawnOpts.poolSizePerPattern = GAME_OBSTACLE_POOL_SIZE;
+
+  spawnOpts.airY = GAME_OBSTACLE_AIR_Y;
+
+  obstacleSpawner = std::make_unique<ObstacleSpawner>(
+      obstacleOpts, spawnOpts, shader.get());
+}
+
 void Game::recycleRoadSegments() {
   float recycleThreshold =
       player->getObject().pos.z + GAME_ROAD_SEGMENT_LENGTH;
@@ -113,13 +151,24 @@ void Game::recycleRoadSegments() {
   }
 }
 
+void Game::handleCollision() {
+  const Obstacle *hit =
+      obstacleSpawner->checkCollision(player->getCollider());
+  if (hit) {
+    std::cerr << "[Game] collision obstacle type "
+              << " at z=" << hit->getObject().pos.z << "\n";
+  }
+}
+
 void Game::update() {
   float currentTime = static_cast<float>(glfwGetTime());
   deltaTime = currentTime - lastFrameTime;
   lastFrameTime = currentTime;
 
   player->update(deltaTime);
+  obstacleSpawner->update(player->getObject().pos.z, deltaTime);
   recycleRoadSegments();
+  handleCollision();
 }
 
 void Game::render() {
@@ -142,6 +191,7 @@ void Game::render() {
     segment->draw(view, projection);
   }
   player->draw(view, projection);
+  obstacleSpawner->render(view, projection);
 
   glfwSwapBuffers(wnd);
 }

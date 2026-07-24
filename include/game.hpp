@@ -2,6 +2,7 @@
 
 #include "mesh.hpp"
 #include "object.hpp"
+#include "obstacle-spawner.hpp"
 #include "player.hpp"
 #include "shader.hpp"
 
@@ -23,6 +24,21 @@
 #define GAME_PLAYER_FALL_ACCEL_FACTOR 4.0f
 #define GAME_PLAYER_JUMP_HEIGHT 1.5f
 
+#define GAME_OBSTACLE_HEIGHT 1.5f
+#define GAME_OBSTACLE_DEPTH 1.5f
+#define GAME_OBSTACLE_PADDING 0.4f
+#define GAME_SPAWN_SAFE_MARGIN_Z 320.0f
+#define GAME_OBSTACLE_BIG_HEIGHT_MULTIPLIER 2.5f
+#define GAME_OBSTACLE_BIG_DEPTH_MULTIPLIER 2.5f
+#define GAME_OBSTACLE_INIT_NEXT_SPAWN_Z -50.0f
+#define GAME_OBSTACLE_MIN_SPAWN_INTERVAL_EASY 30.0f
+#define GAME_OBSTACLE_MAX_SPAWN_INTERVAL_EASY 70.0f
+#define GAME_OBSTACLE_MIN_SPAWN_INTERVAL_HARD 10.0f
+#define GAME_OBSTACLE_MAX_SPAWN_INTERVAL_HARD 25.0f
+#define GAME_OBSTACLE_AIR_Y 5.0f
+#define GAME_OBSTACLE_POOL_SIZE 10
+
+#define GAME_DIFFICULTY_RAMP_DURATION 240.0f
 
 #define GAME_ROAD_SEGMENT_COUNT 15
 #define GAME_ROAD_SEGMENT_LENGTH 30.0f
@@ -63,13 +79,17 @@ private:
 
   std::unique_ptr<Mesh> smallObstacleMesh;
 
+  std::unique_ptr<ObstacleSpawner> obstacleSpawner;
+
   int initialize();
   void initPlayer();
   void initRoad();
+  void initObstacles();
 
   void processInput();
   void update();
   void render();
 
   void recycleRoadSegments();
+  void handleCollision();
 };
