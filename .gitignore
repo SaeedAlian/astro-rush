@@ -4,3 +4,4 @@ CMakeCache.txt
 CTestTestfile.cmake
 cmake_install.cmake
 compile_commands.json
+temp/
