@@ -57,6 +57,10 @@ public:
   void run();
 
 private:
+  static constexpr int maxHealth = 100;
+  static constexpr int damagePerHit = 25;
+  static constexpr float invulDuration = 1.5f;
+
   const unsigned int width, height;
   const char *title;
 
@@ -67,6 +71,10 @@ private:
 
   float deltaTime = 0.0f;
   float lastFrameTime = 0.0f;
+
+  int score = 0;
+  int health = maxHealth;
+  float invulTimer = 0.0f;
 
   GLFWwindow *wnd = nullptr;
 
@@ -85,10 +93,13 @@ private:
   void initPlayer();
   void initRoad();
   void initObstacles();
+  void initHud();
 
   void processInput();
   void update();
   void render();
+  void renderHud();
+  void shutdownHud();
 
   void recycleRoadSegments();
   void handleCollision();

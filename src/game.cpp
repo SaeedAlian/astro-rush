@@ -9,8 +9,29 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
+#include <imgui.h>
+
 #include <iostream>
 #include <memory>
+
+void drawHeart(ImDrawList *drawList, ImVec2 topLeft, float size,
+               ImU32 color) {
+  float r = size * 0.25f;
+
+  ImVec2 leftCenter(topLeft.x + r, topLeft.y + r);
+  ImVec2 rightCenter(topLeft.x + size - r, topLeft.y + r);
+
+  drawList->AddCircleFilled(leftCenter, r, color, 16);
+  drawList->AddCircleFilled(rightCenter, r, color, 16);
+
+  ImVec2 p1(topLeft.x, topLeft.y + r * 0.9f);
+  ImVec2 p2(topLeft.x + size, topLeft.y + r * 0.9f);
+  ImVec2 p3(topLeft.x + size * 0.5f, topLeft.y + size);
+
+  drawList->AddTriangleFilled(p1, p2, p3, color);
+}
 
 Game::Game(GameOptions opts)
     : title(opts.title), width(opts.width), height(opts.height),
@@ -29,10 +50,12 @@ Game::Game(GameOptions opts)
   initPlayer();
   initRoad();
   initObstacles();
+  initHud();
 }
 
 Game::~Game() {
   if (wnd) {
+    shutdownHud();
     glfwTerminate();
   }
 }
@@ -139,6 +162,22 @@ void Game::initObstacles() {
       obstacleOpts, spawnOpts, shader.get());
 }
 
+void Game::initHud() {
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGui::StyleColorsDark();
+  ImGui::GetIO().FontGlobalScale = 1.4f;
+
+  ImGui_ImplGlfw_InitForOpenGL(wnd, true);
+  ImGui_ImplOpenGL3_Init("#version 330");
+}
+
+void Game::shutdownHud() {
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
+}
+
 void Game::recycleRoadSegments() {
   float recycleThreshold =
       player->getObject().pos.z + GAME_ROAD_SEGMENT_LENGTH;
@@ -152,15 +191,30 @@ void Game::recycleRoadSegments() {
 }
 
 void Game::handleCollision() {
+  if (invulTimer > 0.0f)
+    return;
+
   const Obstacle *hit =
       obstacleSpawner->checkCollision(player->getCollider());
+
   if (hit) {
-    std::cerr << "[Game] collision obstacle type "
-              << " at z=" << hit->getObject().pos.z << "\n";
+    health -= damagePerHit;
+
+    if (health < 0)
+      health = 0;
+
+    invulTimer = invulDuration;
+
+    if (health == 0) {
+      // gameover
+      std::cerr << "[Game] player died\n";
+    }
   }
 }
 
 void Game::update() {
+  constexpr float scoreFactor = 0.1f;
+
   float currentTime = static_cast<float>(glfwGetTime());
   deltaTime = currentTime - lastFrameTime;
   lastFrameTime = currentTime;
@@ -168,7 +222,64 @@ void Game::update() {
   player->update(deltaTime);
   obstacleSpawner->update(player->getObject().pos.z, deltaTime);
   recycleRoadSegments();
+
+  if (invulTimer > 0.0f) {
+    invulTimer -= deltaTime;
+
+    if (invulTimer < 0.0f)
+      invulTimer = 0.0f;
+  }
+
   handleCollision();
+
+  score = static_cast<int>(-player->getObject().pos.z * scoreFactor);
+}
+
+void Game::renderHud() {
+  constexpr float heartSize = 20.0f;
+  constexpr float heartSpacing = 4.0f;
+  constexpr int totalHearts = maxHealth / damagePerHit;
+
+  ImGui_ImplOpenGL3_NewFrame();
+  ImGui_ImplGlfw_NewFrame();
+  ImGui::NewFrame();
+
+  ImGuiWindowFlags flags =
+      ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
+      ImGuiWindowFlags_NoBackground |
+      ImGuiWindowFlags_NoSavedSettings |
+      ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+
+  ImGui::SetNextWindowPos(ImVec2(16.0f, 16.0f));
+  ImGui::Begin("HUD", nullptr, flags);
+
+  ImGui::TextColored(ImVec4(0.0f, 0.35f, 0.3f, 1.0f), "Score: %d",
+                     score);
+
+  ImGui::Spacing();
+
+  int filledHearts = health / damagePerHit;
+
+  ImDrawList *drawList = ImGui::GetWindowDrawList();
+  ImVec2 cursor = ImGui::GetCursorScreenPos();
+
+  for (int i = 0; i < totalHearts; ++i) {
+    ImVec2 topLeft(cursor.x + i * (heartSize + heartSpacing),
+                   cursor.y);
+    ImU32 color = (i < filledHearts) ? IM_COL32(220, 40, 60, 255)
+                                     : IM_COL32(90, 90, 90, 150);
+    drawHeart(drawList, topLeft, heartSize, color);
+  }
+
+  ImGui::Dummy(
+      ImVec2(totalHearts * (heartSize + heartSpacing), heartSize));
+
+  ImGui::Spacing();
+
+  ImGui::End();
+
+  ImGui::Render();
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void Game::render() {
@@ -192,6 +303,8 @@ void Game::render() {
   }
   player->draw(view, projection);
   obstacleSpawner->render(view, projection);
+
+  renderHud();
 
   glfwSwapBuffers(wnd);
 }
