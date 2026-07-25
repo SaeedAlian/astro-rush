@@ -1,7 +1,12 @@
 #include "mesh.hpp"
 
+#include <tiny_obj_loader.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
+
+#include <cstdlib>
+#include <iostream>
 
 /*
  * Initializes a mesh by its vertices and indices.
@@ -30,14 +35,18 @@ Mesh::Mesh(const std::vector<float> &verts,
                idxs.size() * sizeof(unsigned int), idxs.data(),
                GL_STATIC_DRAW);
 
-  // position (location 0), normal (location 1)
-  unsigned int stride = 6 * sizeof(float);
+  // position (location 0), normal (location 1), uv (location 2)
+  unsigned int stride = 8 * sizeof(float);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void *)0);
   glEnableVertexAttribArray(0);
 
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride,
                         (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
+
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride,
+                        (void *)(6 * sizeof(float)));
+  glEnableVertexAttribArray(2);
 
   glBindVertexArray(0);
 }
@@ -122,37 +131,37 @@ Mesh Mesh::createCube(float size) {
 
   // clang-format off
   std::vector<float> vertices = {
-      // position       // normal
+      // position       // normal       // uv
       // front 
-      -h, -h,  h,       0, 0, 1,
-       h, -h,  h,       0, 0, 1,
-       h,  h,  h,       0, 0, 1,
-      -h,  h,  h,       0, 0, 1,
+      -h, -h,  h,       0, 0, 1,        0, 0,
+       h, -h,  h,       0, 0, 1,        0, 0,
+       h,  h,  h,       0, 0, 1,        0, 0,
+      -h,  h,  h,       0, 0, 1,        0, 0,
       // back 
-       h, -h, -h,       0, 0, -1,
-      -h, -h, -h,       0, 0, -1,
-      -h,  h, -h,       0, 0, -1,
-       h,  h, -h,       0, 0, -1,
+       h, -h, -h,       0, 0, -1,       0, 0,
+      -h, -h, -h,       0, 0, -1,       0, 0,
+      -h,  h, -h,       0, 0, -1,       0, 0,
+       h,  h, -h,       0, 0, -1,       0, 0,
       // left
-      -h, -h, -h,  -    1, 0, 0,
-      -h, -h,  h,  -    1, 0, 0,
-      -h,  h,  h,  -    1, 0, 0,
-      -h,  h, -h,  -    1, 0, 0,
+      -h, -h, -h,  -    1, 0, 0,        0, 0,
+      -h, -h,  h,  -    1, 0, 0,        0, 0,
+      -h,  h,  h,  -    1, 0, 0,        0, 0,
+      -h,  h, -h,  -    1, 0, 0,        0, 0,
       // right
-       h, -h,  h,       1, 0, 0,
-       h, -h, -h,       1, 0, 0,
-       h,  h, -h,       1, 0, 0,
-       h,  h,  h,       1, 0, 0,
+       h, -h,  h,       1, 0, 0,        0, 0,
+       h, -h, -h,       1, 0, 0,        0, 0,
+       h,  h, -h,       1, 0, 0,        0, 0,
+       h,  h,  h,       1, 0, 0,        0, 0,
       // top 
-      -h,  h,  h,       0, 1, 0,
-       h,  h,  h,       0, 1, 0,
-       h,  h, -h,       0, 1, 0,
-      -h,  h, -h,       0, 1, 0,
+      -h,  h,  h,       0, 1, 0,        0, 0,
+       h,  h,  h,       0, 1, 0,        0, 0,
+       h,  h, -h,       0, 1, 0,        0, 0,
+      -h,  h, -h,       0, 1, 0,        0, 0,
       // bottom
-      -h, -h, -h,       0, -1, 0,
-       h, -h, -h,       0, -1, 0,
-       h, -h,  h,       0, -1, 0,
-      -h, -h,  h,       0, -1, 0,
+      -h, -h, -h,       0, -1, 0,       0, 0,
+       h, -h, -h,       0, -1, 0,       0, 0,
+       h, -h,  h,       0, -1, 0,       0, 0,
+      -h, -h,  h,       0, -1, 0,       0, 0,
   };
   std::vector<unsigned int> indices = {
       0, 1, 2,       2, 3, 0,        // front
@@ -183,37 +192,37 @@ Mesh Mesh::createBox(float width, float height, float depth) {
 
   // clang-format off
   std::vector<float> vertices = {
-      // position       // normal
+      // position       // normal       // uv
       // front 
-      -w, -h,  d,       0, 0, 1,
-       w, -h,  d,       0, 0, 1,
-       w,  h,  d,       0, 0, 1,
-      -w,  h,  d,       0, 0, 1,
+      -w, -h,  d,       0, 0, 1,        0, 0,
+       w, -h,  d,       0, 0, 1,        0, 0,
+       w,  h,  d,       0, 0, 1,        0, 0,
+      -w,  h,  d,       0, 0, 1,        0, 0,
       // back 
-       w, -h, -d,       0, 0, -1,
-      -w, -h, -d,       0, 0, -1,
-      -w,  h, -d,       0, 0, -1,
-       w,  h, -d,       0, 0, -1,
+       w, -h, -d,       0, 0, -1,       0, 0,
+      -w, -h, -d,       0, 0, -1,       0, 0,
+      -w,  h, -d,       0, 0, -1,       0, 0,
+       w,  h, -d,       0, 0, -1,       0, 0,
       // left
-      -w, -h, -d,  -    1, 0, 0,
-      -w, -h,  d,  -    1, 0, 0,
-      -w,  h,  d,  -    1, 0, 0,
-      -w,  h, -d,  -    1, 0, 0,
+      -w, -h, -d,  -    1, 0, 0,        0, 0,
+      -w, -h,  d,  -    1, 0, 0,        0, 0,
+      -w,  h,  d,  -    1, 0, 0,        0, 0,
+      -w,  h, -d,  -    1, 0, 0,        0, 0,
       // right
-       w, -h,  d,       1, 0, 0,
-       w, -h, -d,       1, 0, 0,
-       w,  h, -d,       1, 0, 0,
-       w,  h,  d,       1, 0, 0,
+       w, -h,  d,       1, 0, 0,        0, 0,
+       w, -h, -d,       1, 0, 0,        0, 0,
+       w,  h, -d,       1, 0, 0,        0, 0,
+       w,  h,  d,       1, 0, 0,        0, 0,
       // top 
-      -w,  h,  d,       0, 1, 0,
-       w,  h,  d,       0, 1, 0,
-       w,  h, -d,       0, 1, 0,
-      -w,  h, -d,       0, 1, 0,
+      -w,  h,  d,       0, 1, 0,        0, 0,
+       w,  h,  d,       0, 1, 0,        0, 0,
+       w,  h, -d,       0, 1, 0,        0, 0,
+      -w,  h, -d,       0, 1, 0,        0, 0,
       // bottom
-      -w, -h, -d,       0, -1, 0,
-       w, -h, -d,       0, -1, 0,
-       w, -h,  d,       0, -1, 0,
-      -w, -h,  d,       0, -1, 0,
+      -w, -h, -d,       0, -1, 0,       0, 0,
+       w, -h, -d,       0, -1, 0,       0, 0,
+       w, -h,  d,       0, -1, 0,       0, 0,
+      -w, -h,  d,       0, -1, 0,       0, 0,
   };
   std::vector<unsigned int> indices = {
       0, 1, 2,       2, 3, 0,        // front
@@ -242,11 +251,11 @@ Mesh Mesh::createPlane(float width, float depth) {
 
   // clang-format off
   std::vector<float> vertices = {
-      // pos           // normal
-      -hw, 0.0f,  hd,   0, 1, 0,
-       hw, 0.0f,  hd,   0, 1, 0,
-       hw, 0.0f, -hd,   0, 1, 0,
-      -hw, 0.0f, -hd,   0, 1, 0,
+      // pos           // normal      // uv
+      -hw, 0.0f,  hd,   0, 1, 0,       0, 0,
+       hw, 0.0f,  hd,   0, 1, 0,       0, 0,
+       hw, 0.0f, -hd,   0, 1, 0,       0, 0,
+      -hw, 0.0f, -hd,   0, 1, 0,       0, 0,
   };
   std::vector<unsigned int> indices = {
       0, 1, 2,
@@ -255,4 +264,143 @@ Mesh Mesh::createPlane(float width, float depth) {
   // clang-format on
 
   return Mesh(vertices, indices);
+}
+
+/*
+ * Loads .obj file and creates a LoadedMesh vector from the object
+ * face materials.
+ *
+ * First, it loads the .obj file from path, checks for errors, then
+ * loads the .mtl file related to the .obj.
+ * From each face material (bucket), extract the vertices, indices and
+ * uvs, then build the result (LoadedMesh) from the buckets.
+ * LoadedMesh contains the mesh itself and the mesh material.
+ * The mesh material can have textures map to it, so they will
+ * be automatically loaded from the base path.
+ *
+ * @param path | .obj file path
+ *
+ * @return the (mesh, material) pair per each bucket
+ */
+std::vector<LoadedMesh> Mesh::loadObj(const std::string &path) {
+  tinyobj::ObjReaderConfig config;
+  config.triangulate = true;
+  tinyobj::ObjReader reader;
+
+  if (!reader.ParseFromFile(path, config)) {
+    std::cerr << "[Mesh] failed to load obj file: " << path << "\n";
+    exit(1);
+  }
+
+  if (!reader.Error().empty()) {
+    std::cerr << "[Mesh] reader error: " << reader.Error() << "\n";
+    exit(1);
+  }
+  if (!reader.Warning().empty()) {
+    std::cerr << "[Mesh] reader warning: " << reader.Warning()
+              << "\n";
+  }
+
+  const auto &attrib = reader.GetAttrib();
+  const auto &shapes = reader.GetShapes();
+  const auto &materials = reader.GetMaterials();
+
+  // vertices, indices and dedup tables per material id
+  std::unordered_map<int, std::vector<float>> vertsByMaterial;
+  std::unordered_map<int, std::vector<unsigned int>> idxsByMaterial;
+  std::unordered_map<int,
+                     std::unordered_map<std::string, unsigned int>>
+      dedupByMaterial;
+
+  for (const auto &shape : shapes) {
+    size_t indexOffset = 0; // pos from mesh.indices
+
+    for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); ++f) {
+      int matId = f < shape.mesh.material_ids.size()
+                      ? shape.mesh.material_ids[f]
+                      : -1;
+
+      unsigned char faceVerts = shape.mesh.num_face_vertices[f];
+
+      auto &verts = vertsByMaterial[matId];
+      auto &idxs = idxsByMaterial[matId];
+      auto &dedup = dedupByMaterial[matId];
+
+      for (unsigned char v = 0; v < faceVerts; ++v) {
+        const auto &index =
+            shape.mesh.indices[indexOffset + v]; // single corner of
+                                                 // the current face
+
+        // unique per distinct vertex
+        std::string key = std::to_string(index.vertex_index) + "/" +
+                          std::to_string(index.normal_index) + "/" +
+                          std::to_string(index.texcoord_index);
+
+        auto it = dedup.find(key);
+
+        // if we saw the duplicate vertex, just reuse the index
+        if (it != dedup.end()) {
+          idxs.push_back(it->second);
+          continue;
+        }
+
+        float px = attrib.vertices[3 * index.vertex_index + 0];
+        float py = attrib.vertices[3 * index.vertex_index + 1];
+        float pz = attrib.vertices[3 * index.vertex_index + 2];
+
+        float nx = 0.0f, ny = 0.0f, nz = 0.0f;
+        if (index.normal_index >= 0) {
+          nx = attrib.normals[3 * index.normal_index + 0];
+          ny = attrib.normals[3 * index.normal_index + 1];
+          nz = attrib.normals[3 * index.normal_index + 2];
+        }
+
+        float u = 0.0f, uvY = 0.0f;
+        if (index.texcoord_index >= 0) {
+          u = attrib.texcoords[2 * index.texcoord_index + 0];
+          uvY = attrib.texcoords[2 * index.texcoord_index + 1];
+        }
+
+        unsigned int newIndex =
+            static_cast<unsigned int>(verts.size() / 8);
+        verts.insert(verts.end(), {px, py, pz, nx, ny, nz, u, uvY});
+        dedup.emplace(std::move(key), newIndex);
+        idxs.push_back(newIndex);
+      }
+
+      indexOffset += faceVerts; // move past the face
+    }
+  }
+
+  std::vector<LoadedMesh> result;
+
+  // put back the result (buckets) together
+  for (auto &[matId, verts] : vertsByMaterial) {
+    MeshMaterial material;
+
+    if (matId >= 0 && matId < static_cast<int>(materials.size())) {
+      const auto &m = materials[matId];
+      material.diffuseColor =
+          glm::vec3(m.diffuse[0], m.diffuse[1], m.diffuse[2]);
+
+      // setup the texture file path
+      if (!m.diffuse_texname.empty()) {
+        std::string baseDir =
+            path.substr(0, path.find_last_of("/\\") + 1);
+
+        std::string texname = m.diffuse_texname;
+        for (char &c : texname) {
+          if (c == '\\')
+            c = '/';
+        }
+
+        material.diffuseTexPath = baseDir + texname;
+      }
+    }
+
+    result.push_back(
+        LoadedMesh{Mesh(verts, idxsByMaterial[matId]), material});
+  }
+
+  return result;
 }

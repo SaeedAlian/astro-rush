@@ -1,5 +1,7 @@
 #include "player.hpp"
 
+#include <vector>
+
 Player::Player(const PlayerOptions options, Shader *shader,
                const float strafeLimit)
     : opts(options), groundY(options.size * 0.5f),
@@ -13,10 +15,25 @@ Player::Player(const PlayerOptions options, Shader *shader,
   x = 0.0f;
   y = groundY;
 
-  mesh = std::make_unique<Mesh>(Mesh::createCube(opts.size));
-  object = std::make_unique<Object>(mesh.get(), shader);
-  object->color = glm::vec3(0.8f, 0.2f, 0.4f);
+  auto loadedParts = Mesh::loadObj(PLAYER_OBJ_PATH);
+
+  std::vector<ObjectPart> objParts;
+
+  for (auto &part : loadedParts) {
+    meshes.push_back(std::make_unique<Mesh>(std::move(part.mesh)));
+
+    Texture *tex = nullptr;
+    if (!part.material.diffuseTexPath.empty()) {
+      tex = Texture::load(part.material.diffuseTexPath);
+    }
+
+    objParts.push_back(
+        {meshes.back().get(), part.material.diffuseColor, tex});
+  }
+
+  object = std::make_unique<Object>(std::move(objParts), shader);
   object->pos = glm::vec3(0.0f, y, 0.0f);
+  object->scale = glm::vec3(PLAYER_SCALE);
 }
 
 BoxCollider Player::getCollider() const {

@@ -2,8 +2,12 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-Object::Object(Mesh *mesh, Shader *shader)
-    : mesh(mesh), shader(shader) {}
+Object::Object(Mesh *mesh, glm::vec3 defaultColor, Texture *texture,
+               Shader *shader)
+    : parts{{mesh, defaultColor, texture}}, shader(shader) {}
+
+Object::Object(std::vector<ObjectPart> parts, Shader *shader)
+    : parts(std::move(parts)), shader(shader) {}
 
 /*
  * Calculates the object model matrix based on its position,
@@ -34,7 +38,18 @@ void Object::draw(const glm::mat4 &view,
   shader->setMat4("model", getModelMat());
   shader->setMat4("projection", projection);
   shader->setMat4("view", view);
-  shader->setVec3("objcolor", color);
 
-  mesh->draw();
+  for (const auto &part : parts) {
+    shader->setVec3("objColor", part.color);
+
+    bool hasTexture = part.texture != nullptr;
+    shader->setInt("hasTexture", hasTexture ? 1 : 0);
+
+    if (hasTexture) {
+      part.texture->bind(0);
+      shader->setInt("diffuseTex", 0);
+    }
+
+    part.mesh->draw();
+  }
 }

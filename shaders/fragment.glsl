@@ -2,8 +2,11 @@
 
 in vec3 fragNormal;
 in vec3 fragPos;
+in vec2 fragUV;
 
-uniform vec3 objcolor;
+uniform vec3 objColor;
+uniform sampler2D diffuseTex;
+uniform int hasTexture;
 
 out vec4 fragColor;
 
@@ -14,6 +17,7 @@ void main() {
   float ambient = 0.35;
   float diffuse = max(dot(normal, lightDir), 0.0) * 0.65;
 
-  vec3 result = objcolor * (ambient + diffuse);
+  vec3 base = (hasTexture == 1) ? texture(diffuseTex, fragUV).rgb : objColor;
+  vec3 result = base * (ambient + diffuse);
   fragColor = vec4(result, 1.0);
 }

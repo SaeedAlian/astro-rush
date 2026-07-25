@@ -113,14 +113,15 @@ void Game::initRoad() {
       Mesh::createPlane(roadWidth, GAME_ROAD_SEGMENT_LENGTH));
 
   for (int i = 0; i < GAME_ROAD_SEGMENT_COUNT; ++i) {
-    auto segment =
-        std::make_unique<Object>(roadSegmentMesh.get(), shader.get());
+    auto color = (i % 2 == 0) ? glm::vec3(0.25f, 0.25f, 0.28f)
+                              : glm::vec3(0.3f, 0.3f, 0.33f);
+
+    auto segment = std::make_unique<Object>(
+        roadSegmentMesh.get(), color, nullptr, shader.get());
 
     segment->pos =
         glm::vec3(0.0f, 0.0f,
                   -static_cast<float>(i) * GAME_ROAD_SEGMENT_LENGTH);
-    segment->color = (i % 2 == 0) ? glm::vec3(0.25f, 0.25f, 0.28f)
-                                  : glm::vec3(0.3f, 0.3f, 0.33f);
 
     roadSegments.push_back(std::move(segment));
   }

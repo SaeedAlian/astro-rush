@@ -7,6 +7,10 @@
 
 #include <memory>
 
+#define PLAYER_OBJ_PATH "models/ship/neghvar.obj"
+
+#define PLAYER_SCALE 0.50f, 0.50f, 0.50f
+
 enum class PlayerStatus {
   ON_GROUND = 0,
   JUMPING = 1,
@@ -50,6 +54,6 @@ private:
 
   PlayerStatus status = PlayerStatus::ON_GROUND;
 
-  std::unique_ptr<Mesh> mesh;
+  std::vector<std::unique_ptr<Mesh>> meshes;
   std::unique_ptr<Object> object;
 };

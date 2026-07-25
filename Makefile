@@ -502,6 +502,54 @@ src/shader.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/shader.cpp.s
 .PHONY : src/shader.cpp.s
 
+src/texture.o: src/texture.cpp.o
+.PHONY : src/texture.o
+
+# target to build an object file
+src/texture.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/texture.cpp.o
+.PHONY : src/texture.cpp.o
+
+src/texture.i: src/texture.cpp.i
+.PHONY : src/texture.i
+
+# target to preprocess a source file
+src/texture.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/texture.cpp.i
+.PHONY : src/texture.cpp.i
+
+src/texture.s: src/texture.cpp.s
+.PHONY : src/texture.s
+
+# target to generate assembly for a file
+src/texture.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/texture.cpp.s
+.PHONY : src/texture.cpp.s
+
+src/tinyobjloader.o: src/tinyobjloader.cpp.o
+.PHONY : src/tinyobjloader.o
+
+# target to build an object file
+src/tinyobjloader.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/tinyobjloader.cpp.o
+.PHONY : src/tinyobjloader.cpp.o
+
+src/tinyobjloader.i: src/tinyobjloader.cpp.i
+.PHONY : src/tinyobjloader.i
+
+# target to preprocess a source file
+src/tinyobjloader.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/tinyobjloader.cpp.i
+.PHONY : src/tinyobjloader.cpp.i
+
+src/tinyobjloader.s: src/tinyobjloader.cpp.s
+.PHONY : src/tinyobjloader.s
+
+# target to generate assembly for a file
+src/tinyobjloader.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/tinyobjloader.cpp.s
+.PHONY : src/tinyobjloader.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -557,6 +605,12 @@ help:
 	@echo "... src/shader.o"
 	@echo "... src/shader.i"
 	@echo "... src/shader.s"
+	@echo "... src/texture.o"
+	@echo "... src/texture.i"
+	@echo "... src/texture.s"
+	@echo "... src/tinyobjloader.o"
+	@echo "... src/tinyobjloader.i"
+	@echo "... src/tinyobjloader.s"
 .PHONY : help
 
 

@@ -22,6 +22,8 @@ set(SRC_FILES
     src/obstacle.cpp
     src/obstacle-spawner.cpp
     src/game.cpp
+    src/texture.cpp
+    src/tinyobjloader.cpp
 )
 
 add_executable(endless-runner ${SRC_FILES})
@@ -43,7 +45,7 @@ target_include_directories(imgui PUBLIC
 target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
 target_link_libraries(imgui PUBLIC glfw)
 
-target_include_directories(endless-runner PRIVATE include)
+target_include_directories(endless-runner PRIVATE include external/tinyobjloader external/stbimage)
 
 target_link_libraries(endless-runner
     OpenGL::GL
