@@ -129,13 +129,10 @@ void Game::initObstacles() {
   ObstacleOptions obstacleOpts;
   ObstacleSpawnOptions spawnOpts;
 
-  obstacleOpts.obstacleDepth = GAME_OBSTACLE_DEPTH;
-  obstacleOpts.obstacleHeight = GAME_OBSTACLE_HEIGHT;
+  obstacleOpts.obstacleScale = GAME_OBSTACLE_SCALE;
   obstacleOpts.obstaclePadding = GAME_OBSTACLE_PADDING;
-  obstacleOpts.bigObstacleHeightMultiplier =
-      GAME_OBSTACLE_BIG_HEIGHT_MULTIPLIER;
-  obstacleOpts.bigObstacleDepthMultiplier =
-      GAME_OBSTACLE_BIG_DEPTH_MULTIPLIER;
+  obstacleOpts.bigObstacleScaleMultiplier =
+      GAME_OBSTACLE_BIG_SCALE_MULTIPLIER;
 
   spawnOpts.initNextSpawnZ = GAME_OBSTACLE_INIT_NEXT_SPAWN_Z;
   spawnOpts.spawnSafeMarginZ = GAME_SPAWN_SAFE_MARGIN_Z;

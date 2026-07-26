@@ -23,6 +23,26 @@ struct SpawnPattern {
   float anchorZ = 0.0f;
 };
 
+struct ObstacleProp {
+  std::vector<std::unique_ptr<Mesh>> meshes;
+  std::vector<ObjectPart> parts;
+
+  glm::vec3 laneScale;
+  glm::vec3 bigScale;
+
+  glm::vec3 laneScaledSize;
+  glm::vec3 bigScaledSize;
+
+  ObstacleProp(std::vector<std::unique_ptr<Mesh>> meshes,
+               std::vector<ObjectPart> parts, glm::vec3 laneScale,
+               glm::vec3 bigScale, glm::vec3 laneScaledSize,
+               glm::vec3 bigScaledSize)
+      : meshes(std::move(meshes)), parts(std::move(parts)),
+        laneScale(laneScale), bigScale(bigScale),
+        laneScaledSize(laneScaledSize), bigScaledSize(bigScaledSize) {
+  }
+};
+
 enum class SpawnPatternType {
   SINGLE_GROUND,
   SINGLE_AIR,
@@ -31,12 +51,9 @@ enum class SpawnPatternType {
 };
 
 struct ObstacleOptions {
-  float obstacleHeight;
-  float obstacleDepth;
+  float obstacleScale;
   float obstaclePadding;
-
-  float bigObstacleHeightMultiplier;
-  float bigObstacleDepthMultiplier;
+  float bigObstacleScaleMultiplier;
 };
 
 struct ObstacleSpawnOptions {
@@ -71,10 +88,16 @@ public:
   checkCollision(const Collider &playerCollider) const;
 
 private:
-  static constexpr float despawnDistance = 2.0f;
+  static constexpr float despawnDistance = 4.0f;
   static constexpr std::array patternTypes = {
       SpawnPatternType::SINGLE_GROUND, SpawnPatternType::SINGLE_AIR,
       SpawnPatternType::WALL, SpawnPatternType::BIG};
+
+  static constexpr std::array obstacleObjs = {
+      "models/asteroid1/asteroid.obj",
+      "models/asteroid2/asteroid.obj",
+      "models/asteroid3/asteroid.obj",
+  };
 
   const ObstacleOptions obstacleOpts;
   const ObstacleSpawnOptions spawnOpts;
@@ -84,17 +107,19 @@ private:
   float elapsedTime = 0.0f;
   float difficulty = 0.0f; // 0 (easiest), 1 (hardest)
 
+  float maxLaneObsSizeZ, maxBigObsSizeZ;
+
   std::mt19937 rng{std::random_device{}()};
 
   std::unordered_map<SpawnPatternType,
                      std::vector<std::unique_ptr<SpawnPattern>>>
       poolByPattern;
 
-  std::unique_ptr<Mesh>
-      laneObstacleMesh; // SINGLE_GROUND / SINGLE_AIR / WALL
-  std::unique_ptr<Mesh> bigObstacleMesh; // BIG
+  std::vector<std::unique_ptr<ObstacleProp>> obstacleProps;
 
+  void loadObstacle(const std::string &path);
   SpawnPattern makePattern(SpawnPatternType type, Shader *shader);
+
   SpawnPattern *findInactive(SpawnPatternType type);
 
   SpawnPatternType pickPatternType();
@@ -107,8 +132,10 @@ private:
 
   float getDespawnDistance(SpawnPatternType type);
 
-  void addEntityToPattern(SpawnPattern *pattern, Mesh *mesh,
-                          Shader *shader, float halfWidth,
-                          float halfHeight, float halfDepth,
-                          float yOffset);
+  ObstacleProp &randomObstacleProp();
+  void createObstaclesForPattern(SpawnPattern &pattern,
+                                 Shader *shader);
+  void addEntityToPattern(SpawnPattern *pattern,
+                          const ObstacleProp &prop, bool big,
+                          Shader *shader, float yOffset);
 };

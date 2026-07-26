@@ -3,6 +3,8 @@
 #include "collision.hpp"
 
 #include <glm/ext/vector_float3.hpp>
+
+#include <limits>
 #include <random>
 
 ObstacleSpawner::ObstacleSpawner(ObstacleOptions obstacleOptions,
@@ -11,16 +13,22 @@ ObstacleSpawner::ObstacleSpawner(ObstacleOptions obstacleOptions,
     : obstacleOpts(obstacleOptions), spawnOpts(spawnOptions),
       nextSpawnZ(spawnOptions.initNextSpawnZ) {
 
-  laneObstacleMesh = std::make_unique<Mesh>(Mesh::createBox(
-      spawnOpts.laneWidth - obstacleOpts.obstaclePadding,
-      obstacleOpts.obstacleHeight, obstacleOpts.obstacleDepth));
+  for (const auto &path : obstacleObjs) {
+    loadObstacle(path);
+  }
 
-  bigObstacleMesh = std::make_unique<Mesh>(Mesh::createBox(
-      (2.0f * spawnOpts.laneWidth) - obstacleOpts.obstaclePadding,
-      obstacleOpts.obstacleHeight *
-          obstacleOpts.bigObstacleHeightMultiplier,
-      obstacleOpts.obstacleDepth *
-          obstacleOpts.bigObstacleDepthMultiplier));
+  maxLaneObsSizeZ = -std::numeric_limits<float>::max();
+  maxBigObsSizeZ = -std::numeric_limits<float>::max();
+
+  for (auto &prop : obstacleProps) {
+    if (prop->bigScaledSize.z > maxBigObsSizeZ) {
+      maxBigObsSizeZ = prop->bigScaledSize.z;
+    }
+
+    if (prop->laneScaledSize.z > maxLaneObsSizeZ) {
+      maxLaneObsSizeZ = prop->laneScaledSize.z;
+    }
+  }
 
   for (const auto type : patternTypes) {
     auto &pool = poolByPattern[type];
@@ -33,64 +41,117 @@ ObstacleSpawner::ObstacleSpawner(ObstacleOptions obstacleOptions,
   }
 }
 
+void ObstacleSpawner::loadObstacle(const std::string &path) {
+  auto bounds = std::make_unique<MeshBounds>();
+  auto loaded = Mesh::loadObj(path, bounds.get());
+
+  glm::vec3 size = bounds->size();
+
+  float laneWidth =
+      spawnOpts.laneWidth - obstacleOpts.obstaclePadding;
+
+  float bigWidth =
+      (2.0f * spawnOpts.laneWidth) - obstacleOpts.obstaclePadding;
+
+  float laneX = laneWidth / size.x;
+  float bigX = bigWidth / size.x;
+
+  glm::vec3 laneScale(laneX, obstacleOpts.obstacleScale,
+                      obstacleOpts.obstacleScale);
+
+  glm::vec3 bigScale(bigX,
+                     obstacleOpts.obstacleScale *
+                         obstacleOpts.bigObstacleScaleMultiplier,
+                     obstacleOpts.obstacleScale *
+                         obstacleOpts.bigObstacleScaleMultiplier);
+
+  glm::vec3 laneSize = glm::abs(size * laneScale);
+  glm::vec3 bigSize = glm::abs(size * bigScale);
+
+  std::vector<std::unique_ptr<Mesh>> meshes;
+  std::vector<ObjectPart> parts;
+
+  meshes.reserve(loaded.size());
+
+  for (auto &part : loaded) {
+    meshes.push_back(std::make_unique<Mesh>(std::move(part.mesh)));
+
+    Texture *tex = nullptr;
+
+    if (!part.material.diffuseTexPath.empty()) {
+      tex = Texture::load(part.material.diffuseTexPath);
+    }
+
+    parts.push_back(
+        {meshes.back().get(), part.material.diffuseColor, tex});
+  }
+
+  obstacleProps.push_back(std::make_unique<ObstacleProp>(
+      std::move(meshes), std::move(parts), laneScale, bigScale,
+      laneSize, bigSize));
+}
+
 SpawnPattern ObstacleSpawner::makePattern(SpawnPatternType type,
                                           Shader *shader) {
   SpawnPattern pattern;
 
-  const float halfHeight = obstacleOpts.obstacleHeight * 0.5f;
-  const float halfDepth = obstacleOpts.obstacleDepth * 0.5f;
-  const float laneHalfWidth = spawnOpts.laneWidth * 0.5f;
+  std::uniform_int_distribution<int> dist(0,
+                                          obstacleProps.size() - 1);
+  int propIdx = dist(rng);
 
-  const float bigHalfWidth = laneHalfWidth * 2.0f;
-  const float bigHalfHeight =
-      halfHeight * obstacleOpts.bigObstacleHeightMultiplier;
-  const float bigHalfDepth =
-      halfDepth * obstacleOpts.bigObstacleDepthMultiplier;
+  auto &prop = *obstacleProps[propIdx];
+
+  float laneHalfHeight = prop.laneScaledSize.y * 0.5;
+  float bigHalfHeight = prop.bigScaledSize.y * 0.5;
 
   switch (type) {
-  case SpawnPatternType::SINGLE_GROUND:
-    addEntityToPattern(&pattern, laneObstacleMesh.get(), shader,
-                       laneHalfWidth, halfHeight, halfDepth,
-                       halfHeight);
-    break;
 
-  case SpawnPatternType::SINGLE_AIR:
-    addEntityToPattern(&pattern, laneObstacleMesh.get(), shader,
-                       laneHalfWidth, halfHeight, halfDepth,
-                       spawnOpts.airY - halfHeight);
-    break;
-
-  case SpawnPatternType::WALL: {
-    int segmentCount = spawnOpts.laneCount / 2 + 1;
-    for (int i = 0; i < segmentCount; ++i) {
-      addEntityToPattern(&pattern, laneObstacleMesh.get(), shader,
-                         laneHalfWidth, halfHeight, halfDepth,
-                         halfHeight);
-    }
+  case SpawnPatternType::SINGLE_GROUND: {
+    addEntityToPattern(&pattern, prop, false, shader, laneHalfHeight);
     break;
   }
 
-  case SpawnPatternType::BIG:
-    addEntityToPattern(&pattern, bigObstacleMesh.get(), shader,
-                       bigHalfWidth, bigHalfHeight, bigHalfDepth,
-                       bigHalfHeight);
+  case SpawnPatternType::BIG: {
+    addEntityToPattern(&pattern, prop, true, shader, bigHalfHeight);
     break;
+  }
+
+  case SpawnPatternType::SINGLE_AIR: {
+    addEntityToPattern(&pattern, prop, false, shader,
+                       spawnOpts.airY - laneHalfHeight);
+    break;
+  }
+
+  case SpawnPatternType::WALL: {
+    int segmentCount = spawnOpts.laneCount / 2 + 1;
+    for (int i = 0; i < segmentCount; i++) {
+      addEntityToPattern(&pattern, prop, false, shader,
+                         laneHalfHeight);
+    }
+
+    break;
+  }
   }
 
   return pattern;
 }
 
 void ObstacleSpawner::addEntityToPattern(SpawnPattern *pattern,
-                                         Mesh *mesh, Shader *shader,
-                                         float halfWidth,
-                                         float halfHeight,
-                                         float halfDepth,
+                                         const ObstacleProp &prop,
+                                         bool big, Shader *shader,
                                          float yOffset) {
+
+  auto size = big ? prop.bigScaledSize : prop.laneScaledSize;
+  auto scale = big ? prop.bigScale : prop.laneScale;
+
   auto obstacle = std::make_unique<Obstacle>(
-      mesh, shader,
+      prop.parts, shader,
       std::make_unique<BoxCollider>(
           glm::vec3(0.0f, 0.0f, 0.0f),
-          glm::vec3(halfWidth, halfHeight, halfDepth)));
+          glm::vec3(size.x * 0.5f, size.y * 0.5f, size.z * 0.5f)),
+      rng);
+
+  obstacle->getObject().scale = scale;
 
   pattern->entities.push_back(
       SpawnEntity{std::move(obstacle), 0.0f, yOffset, 0.0f});
@@ -157,20 +218,17 @@ float ObstacleSpawner::pickSpawnInterval() {
 }
 
 float ObstacleSpawner::getDespawnDistance(SpawnPatternType type) {
-  const float bigDepth = obstacleOpts.obstacleDepth *
-                         obstacleOpts.bigObstacleDepthMultiplier;
-
   float distance = despawnDistance;
 
   switch (type) {
   case SpawnPatternType::SINGLE_GROUND:
   case SpawnPatternType::SINGLE_AIR:
   case SpawnPatternType::WALL: {
-    distance += obstacleOpts.obstacleDepth;
+    distance += maxLaneObsSizeZ;
   }
 
   case SpawnPatternType::BIG: {
-    distance += bigDepth;
+    distance += maxBigObsSizeZ;
   }
   }
 
@@ -250,9 +308,15 @@ void ObstacleSpawner::update(float playerZ, float deltaTime) {
   for (const auto type : patternTypes) {
 
     for (auto &pattern : poolByPattern.at(type)) {
-      if (pattern->active &&
-          pattern->anchorZ > playerZ + getDespawnDistance(type)) {
-        pattern->active = false;
+      if (pattern->active) {
+        if (pattern->anchorZ > playerZ + getDespawnDistance(type)) {
+          pattern->active = false;
+          continue;
+        }
+
+        for (auto &ent : pattern->entities) {
+          ent.obstacle->rotateInPlace(deltaTime);
+        }
       }
     }
   }
