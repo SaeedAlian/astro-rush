@@ -21,8 +21,20 @@
 
 #define PLAYER_COLLIDER_WING_CENTER_Z_OFFSET_FACTOR 0.75f
 
+#define PLAYER_MOVE_ACCELERATION 8.0f
+#define PLAYER_STRAFE_ACCELERATION 5.0f
+#define PLAYER_MOVE_DECELERATION -15.0f
+#define PLAYER_STRAFE_DECELERATION -10.0f
+#define PLAYER_ALTITUDE_ACCEL_FACTOR_WITH_MOVE_VELOCITY 0.5f
+
+#define PLAYER_MIN_MOVE_VELOCITY 15.0f
+#define PLAYER_MAX_MOVE_VELOCITY 40.0f
+#define PLAYER_MIN_STRAFE_VELOCITY 10.0f
+#define PLAYER_MAX_STRAFE_VELOCITY 30.0f
+
 #define PLAYER_ROTATION_SPEED 60.0f
 #define PLAYER_MAX_ROTATION_ANGLE_Z 20.0f
+#define PLAYER_MAX_ROTATION_ANGLE_X 20.0f
 
 enum class PlayerAltitudeStatus {
   ON_LOW = 0,
@@ -49,6 +61,9 @@ public:
   void moveRight(float deltaTime);
   void changeAltitude();
 
+  void accelerate();
+  void decelerate();
+
   void update(float deltaTime);
 
   void draw(const glm::mat4 &view, const glm::mat4 &projection) const;
@@ -64,21 +79,29 @@ public:
 
 private:
   static constexpr float noAltChangeDuration = 0.2f;
+  static constexpr float accelerationDuration = 0.1f;
   static constexpr float rotationSpeed =
       glm::radians(PLAYER_ROTATION_SPEED);
   static constexpr float maxRotationAngleZ =
       glm::radians(PLAYER_MAX_ROTATION_ANGLE_Z);
+  static constexpr float maxRotationAngleX =
+      glm::radians(PLAYER_MAX_ROTATION_ANGLE_X);
 
   const PlayerOptions opts;
   const float strafeLimit;
 
-  float x, y, prevX;
+  float x, y, prevX, prevY;
   float moveVel, vertVel, altitudeAccel, strafeVel;
   float lowAltY, highAltY;
 
+  float moveAccel = 0.0f;
+  float strafeAccel = 0.0f;
+
   float rotationAngleZ = 0.0f;
+  float rotationAngleX = 0.0f;
 
   float altChangeTimer = 0.0f;
+  float accelerationTimer = 0.0f;
 
   std::unique_ptr<MeshBounds> bounds;
 
@@ -91,5 +114,7 @@ private:
   std::unique_ptr<CrossBoxCollider> collider;
 
   void updateAltitude(float deltaTime);
+  void updateVelocities(float deltaTime);
   void updateRotationZ(float deltaTime);
+  void updateRotationX(float deltaTime);
 };

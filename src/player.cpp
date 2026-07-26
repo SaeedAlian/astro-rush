@@ -94,6 +94,7 @@ Player::Player(const PlayerOptions options, Shader *shader,
   x = 0.0f;
   prevX = x;
   y = lowAltY;
+  prevY = y;
 
   object = std::make_unique<Object>(std::move(objParts), shader);
   object->rotationZ = 0.0f;
@@ -138,14 +139,37 @@ void Player::changeAltitude() {
   altChangeTimer = noAltChangeDuration;
 }
 
+void Player::accelerate() {
+  if (accelerationTimer > 0.0f) {
+    return;
+  }
+
+  moveAccel = PLAYER_MOVE_ACCELERATION;
+  strafeAccel = PLAYER_STRAFE_ACCELERATION;
+  accelerationTimer = accelerationDuration;
+}
+
+void Player::decelerate() {
+  if (accelerationTimer > 0.0f) {
+    return;
+  }
+
+  moveAccel = PLAYER_MOVE_DECELERATION;
+  strafeAccel = PLAYER_STRAFE_DECELERATION;
+  accelerationTimer = accelerationDuration;
+}
+
 void Player::draw(const glm::mat4 &view,
                   const glm::mat4 &projection) const {
   object->draw(view, projection);
 }
 
 void Player::updateAltitude(float deltaTime) {
-  float currAltAccel =
-      getAltitudeAcceleration(y, altitudeAccel, highAltY);
+  float currAltAccel = getAltitudeAcceleration(
+      y,
+      altitudeAccel +
+          (moveVel * PLAYER_ALTITUDE_ACCEL_FACTOR_WITH_MOVE_VELOCITY),
+      highAltY);
 
   switch (altitudeStatus) {
   case PlayerAltitudeStatus::GAINING: {
@@ -190,7 +214,7 @@ void Player::updateAltitude(float deltaTime) {
     y = highAltY;
   }
 
-  if (altChangeTimer > 0) {
+  if (altChangeTimer > 0.0f) {
     altChangeTimer = std::max(altChangeTimer - deltaTime, 0.0f);
   }
 }
@@ -198,16 +222,16 @@ void Player::updateAltitude(float deltaTime) {
 void Player::updateRotationZ(float deltaTime) {
   float diffX = x - prevX;
 
-  if (diffX < 0) {
+  if (diffX < 0.0f) {
     rotationAngleZ =
         std::min(rotationAngleZ + (rotationSpeed * deltaTime),
                  maxRotationAngleZ);
-  } else if (diffX > 0) {
+  } else if (diffX > 0.0f) {
     rotationAngleZ =
         std::max(rotationAngleZ - (rotationSpeed * deltaTime),
                  -maxRotationAngleZ);
   } else {
-    if (rotationAngleZ > 0) {
+    if (rotationAngleZ > 0.0f) {
       rotationAngleZ = std::max(
           rotationAngleZ - (rotationSpeed * deltaTime), 0.0f);
     } else {
@@ -219,13 +243,58 @@ void Player::updateRotationZ(float deltaTime) {
   object->rotationZ = rotationAngleZ;
 }
 
+void Player::updateRotationX(float deltaTime) {
+  float diffY = y - prevY;
+
+  if (diffY > 0.0f || moveAccel < 0.0f || strafeAccel < 0.0f) {
+    rotationAngleX =
+        std::min(rotationAngleX + (rotationSpeed * deltaTime),
+                 maxRotationAngleX);
+  } else if (diffY < 0.0f || moveAccel > 0.0f || strafeAccel > 0.0f) {
+    rotationAngleX =
+        std::max(rotationAngleX - (rotationSpeed * deltaTime),
+                 -maxRotationAngleX);
+  } else {
+    if (rotationAngleX > 0.0f) {
+      rotationAngleX = std::max(
+          rotationAngleX - (rotationSpeed * deltaTime), 0.0f);
+    } else {
+      rotationAngleX = std::min(
+          rotationAngleX + (rotationSpeed * deltaTime), 0.0f);
+    }
+  }
+
+  object->rotationX = rotationAngleX;
+}
+
+void Player::updateVelocities(float deltaTime) {
+  if (accelerationTimer <= 0.0f) {
+    moveAccel = 0.0f;
+    strafeAccel = 0.0f;
+  }
+
+  moveVel = std::clamp(moveVel + (moveAccel * deltaTime),
+                       PLAYER_MIN_STRAFE_VELOCITY,
+                       PLAYER_MAX_MOVE_VELOCITY);
+  strafeVel = std::clamp(strafeVel + (strafeAccel * deltaTime),
+                         PLAYER_MIN_STRAFE_VELOCITY,
+                         PLAYER_MAX_STRAFE_VELOCITY);
+
+  if (accelerationTimer > 0.0f) {
+    accelerationTimer = std::max(accelerationTimer - deltaTime, 0.0f);
+  }
+}
+
 void Player::update(float deltaTime) {
+  updateVelocities(deltaTime);
   updateAltitude(deltaTime);
   updateRotationZ(deltaTime);
+  updateRotationX(deltaTime);
 
   object->pos.z -= moveVel * deltaTime;
   object->pos.x = x;
   object->pos.y = y;
 
   prevX = x;
+  prevY = y;
 }

@@ -319,6 +319,14 @@ void Game::processInput() {
     player->moveLeft(deltaTime);
   }
 
+  if (glfwGetKey(wnd, GLFW_KEY_UP) == GLFW_PRESS) {
+    player->accelerate();
+  }
+
+  if (glfwGetKey(wnd, GLFW_KEY_DOWN) == GLFW_PRESS) {
+    player->decelerate();
+  }
+
   if (glfwGetKey(wnd, GLFW_KEY_SPACE) == GLFW_PRESS) {
     player->changeAltitude();
   }
