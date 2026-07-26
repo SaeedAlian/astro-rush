@@ -17,7 +17,9 @@ glm::mat4 Object::getModelMat() const {
   glm::mat4 model = glm::mat4(1.0f);
 
   model = glm::translate(model, pos);
+  model = glm::rotate(model, rotationX, glm::vec3(1, 0, 0));
   model = glm::rotate(model, rotationY, glm::vec3(0, 1, 0));
+  model = glm::rotate_slow(model, rotationZ, glm::vec3(0, 0, 1));
   model = glm::scale(model, scale);
 
   return model;

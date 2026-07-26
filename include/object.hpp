@@ -14,7 +14,10 @@ class Object {
 public:
   glm::vec3 pos{0.0f};
   glm::vec3 scale{1.0f};
+
+  float rotationX = 0.0f;
   float rotationY = 0.0f;
+  float rotationZ = 0.0f;
 
   Object(Mesh *mesh, glm::vec3 defaultColor, Texture *texture,
          Shader *shader);
