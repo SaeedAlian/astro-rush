@@ -9,24 +9,35 @@
 
 #define PLAYER_OBJ_PATH "models/ship/neghvar.obj"
 
-#define PLAYER_SCALE 0.50f, 0.50f, 0.50f
+#define PLAYER_COLLIDER_SIZE_SAFE_SCALE 0.80f
 
-enum class PlayerStatus {
-  ON_GROUND = 0,
-  JUMPING = 1,
-  FALLING = 2,
+#define PLAYER_COLLIDER_WING_WIDTH_FACTOR 0.85f
+#define PLAYER_COLLIDER_WING_HEIGHT_FACTOR 0.7f
+#define PLAYER_COLLIDER_WING_DEPTH_FACTOR 0.45f
+
+#define PLAYER_COLLIDER_BODY_WIDTH_FACTOR 0.25f
+#define PLAYER_COLLIDER_BODY_HEIGHT_FACTOR 1.0f
+#define PLAYER_COLLIDER_BODY_DEPTH_FACTOR 1.0f
+
+#define PLAYER_COLLIDER_WING_CENTER_Z_OFFSET_FACTOR 0.75f
+
+#define PLAYER_ROTATION_SPEED 60.0f
+#define PLAYER_MAX_ROTATION_ANGLE_Z 20.0f
+
+enum class PlayerAltitudeStatus {
+  ON_LOW = 0,
+  GAINING = 1,
+  LOSING = 2,
+  ON_HIGH = 3,
 };
 
 struct PlayerOptions {
   float initMoveVelocity;
   float initStrafeVelocity;
-
-  float initVerticalAcceleration;
-  float jumpAccelerationFactor;
-  float fallAccelerationFactor;
-
-  float jumpHeight;
-  float size;
+  float initAltitudeAcceleration;
+  float maxAltitude;
+  float scale;
+  bool flipZ;
 };
 
 class Player {
@@ -36,24 +47,49 @@ public:
 
   void moveLeft(float deltaTime);
   void moveRight(float deltaTime);
-  void jump();
+  void changeAltitude();
 
   void update(float deltaTime);
 
   void draw(const glm::mat4 &view, const glm::mat4 &projection) const;
 
-  BoxCollider getCollider() const;
+  CrossBoxCollider getCollider() const;
+
+  const glm::vec3 &getSize() const { return scaledSize; };
+
+  float getMoveVelocity() const { return moveVel; };
 
   Object &getObject() { return *object.get(); }
   const Object &getObject() const { return *object.get(); }
 
 private:
-  const PlayerOptions opts;
-  const float groundY, strafeLimit;
-  float moveVel, vertVel, jumpAccel, fallAccel, strafeVel, x, y;
+  static constexpr float noAltChangeDuration = 0.2f;
+  static constexpr float rotationSpeed =
+      glm::radians(PLAYER_ROTATION_SPEED);
+  static constexpr float maxRotationAngleZ =
+      glm::radians(PLAYER_MAX_ROTATION_ANGLE_Z);
 
-  PlayerStatus status = PlayerStatus::ON_GROUND;
+  const PlayerOptions opts;
+  const float strafeLimit;
+
+  float x, y, prevX;
+  float moveVel, vertVel, altitudeAccel, strafeVel;
+  float lowAltY, highAltY;
+
+  float rotationAngleZ = 0.0f;
+
+  float altChangeTimer = 0.0f;
+
+  std::unique_ptr<MeshBounds> bounds;
+
+  glm::vec3 scaledSize;
+
+  PlayerAltitudeStatus altitudeStatus = PlayerAltitudeStatus::ON_LOW;
 
   std::vector<std::unique_ptr<Mesh>> meshes;
   std::unique_ptr<Object> object;
+  std::unique_ptr<CrossBoxCollider> collider;
+
+  void updateAltitude(float deltaTime);
+  void updateRotationZ(float deltaTime);
 };

@@ -36,8 +36,7 @@ void drawHeart(ImDrawList *drawList, ImVec2 topLeft, float size,
 Game::Game(GameOptions opts)
     : title(opts.title), width(opts.width), height(opts.height),
       roadWidth(GAME_LANE_COUNT * GAME_LANE_WIDTH),
-      roadStrafeLimit((GAME_LANE_WIDTH * GAME_LANE_COUNT * 0.5f) -
-                      (GAME_PLAYER_SIZE * 0.5f)) {
+      roadStrafeLimit((GAME_LANE_WIDTH * GAME_LANE_COUNT * 0.5f)) {
 
   if (initialize() != GAME_INIT_SUCCESS)
     return;
@@ -98,11 +97,10 @@ void Game::initPlayer() {
 
   opts.initMoveVelocity = GAME_PLAYER_INIT_MOVE_VELOCITY;
   opts.initStrafeVelocity = GAME_PLAYER_INIT_STRAFE_VELOCITY;
-  opts.initVerticalAcceleration = GAME_PLAYER_INIT_VERTICAL_ACCEL;
-  opts.jumpAccelerationFactor = GAME_PLAYER_JUMP_ACCEL_FACTOR;
-  opts.fallAccelerationFactor = GAME_PLAYER_FALL_ACCEL_FACTOR;
-  opts.jumpHeight = GAME_PLAYER_JUMP_HEIGHT;
-  opts.size = GAME_PLAYER_SIZE;
+  opts.initAltitudeAcceleration = GAME_PLAYER_INIT_ALTITUDE_ACCEL;
+  opts.maxAltitude = GAME_PLAYER_MAX_ALTITUDE;
+  opts.scale = GAME_PLAYER_SCALE;
+  opts.flipZ = false;
 
   player =
       std::make_unique<Player>(opts, shader.get(), roadStrafeLimit);
@@ -325,7 +323,8 @@ void Game::processInput() {
   }
 
   if (glfwGetKey(wnd, GLFW_KEY_SPACE) == GLFW_PRESS) {
-    player->jump();
+    player->changeAltitude();
+  }
   }
 }
 
