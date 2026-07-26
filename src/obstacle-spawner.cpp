@@ -98,7 +98,7 @@ void ObstacleSpawner::addEntityToPattern(SpawnPattern *pattern,
 
 SpawnPattern *ObstacleSpawner::findInactive(SpawnPatternType type) {
   for (auto &pattern : poolByPattern[type]) {
-    if (!pattern->drawn) {
+    if (!pattern->active) {
       return pattern.get();
     }
   }
@@ -221,14 +221,14 @@ void ObstacleSpawner::spawnAt(float z) {
     entity.obstacle->syncCollider();
   }
 
-  pattern->drawn = true;
+  pattern->active = true;
 }
 
 void ObstacleSpawner::render(const glm::mat4 &view,
                              const glm::mat4 &projection) const {
   for (const auto type : patternTypes) {
     for (const auto &pattern : poolByPattern.at(type)) {
-      if (!pattern->drawn)
+      if (!pattern->active)
         continue;
 
       for (const auto &entity : pattern->entities) {
@@ -250,9 +250,9 @@ void ObstacleSpawner::update(float playerZ, float deltaTime) {
   for (const auto type : patternTypes) {
 
     for (auto &pattern : poolByPattern.at(type)) {
-      if (pattern->drawn &&
+      if (pattern->active &&
           pattern->anchorZ > playerZ + getDespawnDistance(type)) {
-        pattern->drawn = false;
+        pattern->active = false;
       }
     }
   }
@@ -262,7 +262,7 @@ const Obstacle *ObstacleSpawner::checkCollision(
     const Collider &playerCollider) const {
   for (const auto type : patternTypes) {
     for (const auto &pattern : poolByPattern.at(type)) {
-      if (!pattern->drawn)
+      if (!pattern->active)
         continue;
 
       for (const auto &entity : pattern->entities) {

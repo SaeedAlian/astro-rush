@@ -19,7 +19,7 @@ struct SpawnEntity {
 
 struct SpawnPattern {
   std::vector<SpawnEntity> entities;
-  bool drawn = false;
+  bool active = false;
   float anchorZ = 0.0f;
 };
 
