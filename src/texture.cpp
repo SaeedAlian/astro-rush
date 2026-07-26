@@ -7,15 +7,7 @@
 
 std::unordered_map<std::string, std::unique_ptr<Texture>>
     Texture::cache;
-/*
- * Loads a texture from disk and creates an GL texture object.
- * Gets a texture file path, and loads it via stb_image library,
- * then binds it to GL.
- *
- * @param path | texture file path
- *
- * @return Texture object instance
- */
+
 Texture *Texture::load(const std::string &path) {
   auto it = cache.find(path);
 
@@ -64,11 +56,6 @@ Texture *Texture::load(const std::string &path) {
   return ptr;
 }
 
-/*
- * Select the texture unit for rendering
- *
- * @param unit
- */
 void Texture::bind(unsigned int unit) const {
   glActiveTexture(GL_TEXTURE0 + unit);
   glBindTexture(GL_TEXTURE_2D, id);

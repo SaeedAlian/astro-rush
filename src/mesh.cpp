@@ -9,14 +9,6 @@
 #include <iostream>
 #include <limits>
 
-/*
- * Initializes a mesh by its vertices and indices.
- * Binds the vertices and indices to the VAO, VBO and EBO
- * that it owns.
- *
- * @param verts | mesh vertices
- * @param idxs | mesh indices
- */
 Mesh::Mesh(const std::vector<float> &verts,
            const std::vector<unsigned int> &idxs) {
   idxcnt = static_cast<unsigned int>(idxs.size());
@@ -52,32 +44,12 @@ Mesh::Mesh(const std::vector<float> &verts,
   glBindVertexArray(0);
 }
 
-/*
- * Removes and deletes VAO, VBO and EBO.
- */
 Mesh::~Mesh() {
   glDeleteVertexArrays(1, &VAO);
   glDeleteBuffers(1, &VBO);
   glDeleteBuffers(1, &EBO);
 }
 
-/*
- * Move-Constructs a Mesh, so that when Mesh is created
- * by static functions like createPlane, createCube ...,
- * it won't delete the Mesh itself by calling the destructor
- * of the temporary result returned by these functions.
- *
- * Static function call
- * -> returns a temp Mesh class (rvalue)
- * -> moves the rvalue to lvalue
- * -> move constructor will be called
- * -> the temporary rvalue properties will be reset
- * -> destructor of rvalue will be called
- * -> because the properties have been resetted, it won't destruct
- * the lvalue
- *
- * @param other | the Mesh being moved from (left empty afterward)
- */
 Mesh::Mesh(Mesh &&other) noexcept
     : VAO(other.VAO), VBO(other.VBO), EBO(other.EBO),
       idxcnt(other.idxcnt) {
@@ -85,15 +57,6 @@ Mesh::Mesh(Mesh &&other) noexcept
   other.idxcnt = 0;
 }
 
-/*
- * The reverse operation of move constructor (move assignment).
- * This will moves the ownership of values from other Mesh
- * to this Mesh, and leaves the other in an empty state.
- *
- * @param other | the Mesh being moved from (left empty afterward)
- *
- * @return reference to this Mesh, for assignment chaining
- */
 Mesh &Mesh::operator=(Mesh &&other) noexcept {
   if (this != &other) {
     glDeleteVertexArrays(1, &VAO);
@@ -111,22 +74,12 @@ Mesh &Mesh::operator=(Mesh &&other) noexcept {
   return *this;
 }
 
-/*
- * Draws the triangles (primitives) from the VAO.
- */
 void Mesh::draw() const {
   glBindVertexArray(VAO);
   glDrawElements(GL_TRIANGLES, idxcnt, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
 }
 
-/*
- * Default static method to create a cube.
- *
- * @param size
- *
- * @return cube mesh
- */
 Mesh Mesh::createCube(float size) {
   float h = size * 0.5f;
 
@@ -177,15 +130,6 @@ Mesh Mesh::createCube(float size) {
   return Mesh(vertices, indices);
 }
 
-/*
- * Default static method to create a box.
- *
- * @param width
- * @param height
- * @param depth
- *
- * @return box mesh
- */
 Mesh Mesh::createBox(float width, float height, float depth) {
   float w = width * 0.5f;
   float h = height * 0.5f;
@@ -238,14 +182,6 @@ Mesh Mesh::createBox(float width, float height, float depth) {
   return Mesh(vertices, indices);
 }
 
-/*
- * Default static method to create a plane.
- *
- * @param width
- * @param depth
- *
- * @return plane mesh
- */
 Mesh Mesh::createPlane(float width, float depth) {
   float hw = width * 0.5f;
   float hd = depth * 0.5f;
@@ -267,24 +203,6 @@ Mesh Mesh::createPlane(float width, float depth) {
   return Mesh(vertices, indices);
 }
 
-/*
- * Loads .obj file and creates a LoadedMesh vector from the object
- * face materials.
- *
- * First, it loads the .obj file from path, checks for errors, then
- * loads the .mtl file related to the .obj.
- * From each face material (bucket), extract the vertices, indices and
- * uvs, then build the result (LoadedMesh) from the buckets.
- * LoadedMesh contains the mesh itself and the mesh material.
- * The mesh material can have textures map to it, so they will
- * be automatically loaded from the base path.
- *
- * @param path | .obj file path
- * @param bounds | a pointer to a MeshBounds struct to pass the outer
- * min,max bounds
- *
- * @return the (mesh, material) pair per each bucket
- */
 std::vector<LoadedMesh> Mesh::loadObj(const std::string &path,
                                       MeshBounds *bounds) {
   tinyobj::ObjReaderConfig config;

@@ -4,6 +4,14 @@
 
 namespace {
 
+/*
+ * AABB check between two boxes.
+ *
+ * @param aMin | minimum bound coords for box a
+ * @param aMax | maximum bound coords for box a
+ * @param bMin | minimum bound coords for box b
+ * @param bMax | maximum bound coords for box b
+ */
 bool boxCompare(glm::vec3 &aMin, glm::vec3 &aMax, glm::vec3 &bMin,
                 glm::vec3 &bMax) {
   return (aMin.x < bMax.x && aMax.x > bMin.x) &&
