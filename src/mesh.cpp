@@ -7,6 +7,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 
 /*
  * Initializes a mesh by its vertices and indices.
@@ -279,10 +280,13 @@ Mesh Mesh::createPlane(float width, float depth) {
  * be automatically loaded from the base path.
  *
  * @param path | .obj file path
+ * @param bounds | a pointer to a MeshBounds struct to pass the outer
+ * min,max bounds
  *
  * @return the (mesh, material) pair per each bucket
  */
-std::vector<LoadedMesh> Mesh::loadObj(const std::string &path) {
+std::vector<LoadedMesh> Mesh::loadObj(const std::string &path,
+                                      MeshBounds *bounds) {
   tinyobj::ObjReaderConfig config;
   config.triangulate = true;
   tinyobj::ObjReader reader;
@@ -311,6 +315,10 @@ std::vector<LoadedMesh> Mesh::loadObj(const std::string &path) {
   std::unordered_map<int,
                      std::unordered_map<std::string, unsigned int>>
       dedupByMaterial;
+
+  // gets the outer bounds
+  glm::vec3 globalMin(std::numeric_limits<float>::max());
+  glm::vec3 globalMax(-std::numeric_limits<float>::max());
 
   for (const auto &shape : shapes) {
     size_t indexOffset = 0; // pos from mesh.indices
@@ -366,6 +374,9 @@ std::vector<LoadedMesh> Mesh::loadObj(const std::string &path) {
         verts.insert(verts.end(), {px, py, pz, nx, ny, nz, u, uvY});
         dedup.emplace(std::move(key), newIndex);
         idxs.push_back(newIndex);
+
+        globalMin = glm::min(globalMin, glm::vec3(px, py, pz));
+        globalMax = glm::max(globalMax, glm::vec3(px, py, pz));
       }
 
       indexOffset += faceVerts; // move past the face
@@ -400,6 +411,11 @@ std::vector<LoadedMesh> Mesh::loadObj(const std::string &path) {
 
     result.push_back(
         LoadedMesh{Mesh(verts, idxsByMaterial[matId]), material});
+  }
+
+  if (bounds) {
+    bounds->min = globalMin;
+    bounds->max = globalMax;
   }
 
   return result;

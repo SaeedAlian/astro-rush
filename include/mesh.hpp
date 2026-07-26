@@ -7,6 +7,14 @@
 #include <string>
 #include <vector>
 
+struct MeshBounds {
+  glm::vec3 min{0.0f};
+  glm::vec3 max{0.0f};
+
+  glm::vec3 size() const { return (max - min); }
+  glm::vec3 center() const { return (max + min) * 0.5f; }
+};
+
 class Mesh {
 public:
   Mesh(const std::vector<float> &verts,
@@ -24,7 +32,7 @@ public:
   static Mesh createBox(float width, float height, float depth);
   static Mesh createPlane(float width, float depth);
   static std::vector<struct LoadedMesh>
-  loadObj(const std::string &path);
+  loadObj(const std::string &path, MeshBounds *bounds = nullptr);
 
 private:
   unsigned int VAO = 0, VBO = 0, EBO = 0, idxcnt = 0;
