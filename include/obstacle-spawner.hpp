@@ -46,8 +46,11 @@ struct ObstacleProp {
 enum class SpawnPatternType {
   SINGLE_GROUND,
   SINGLE_AIR,
-  WALL,
-  BIG,
+  WALL_GROUND,
+  WALL_AIR,
+  BIG_GROUND,
+  BIG_AIR,
+  DOUBLE_WALL,
 };
 
 struct ObstacleOptions {
@@ -91,7 +94,9 @@ private:
   static constexpr float despawnDistance = 4.0f;
   static constexpr std::array patternTypes = {
       SpawnPatternType::SINGLE_GROUND, SpawnPatternType::SINGLE_AIR,
-      SpawnPatternType::WALL, SpawnPatternType::BIG};
+      SpawnPatternType::WALL_GROUND,   SpawnPatternType::WALL_AIR,
+      SpawnPatternType::BIG_GROUND,    SpawnPatternType::BIG_AIR,
+      SpawnPatternType::DOUBLE_WALL};
 
   static constexpr std::array obstacleObjs = {
       "models/asteroid1/asteroid.obj",

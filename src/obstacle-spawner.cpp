@@ -111,8 +111,14 @@ SpawnPattern ObstacleSpawner::makePattern(SpawnPatternType type,
     break;
   }
 
-  case SpawnPatternType::BIG: {
+  case SpawnPatternType::BIG_GROUND: {
     addEntityToPattern(&pattern, prop, true, shader, bigHalfHeight);
+    break;
+  }
+
+  case SpawnPatternType::BIG_AIR: {
+    addEntityToPattern(&pattern, prop, true, shader,
+                       spawnOpts.airY - bigHalfHeight);
     break;
   }
 
@@ -122,11 +128,33 @@ SpawnPattern ObstacleSpawner::makePattern(SpawnPatternType type,
     break;
   }
 
-  case SpawnPatternType::WALL: {
+  case SpawnPatternType::WALL_GROUND: {
     int segmentCount = spawnOpts.laneCount / 2 + 1;
     for (int i = 0; i < segmentCount; i++) {
       addEntityToPattern(&pattern, prop, false, shader,
                          laneHalfHeight);
+    }
+
+    break;
+  }
+
+  case SpawnPatternType::WALL_AIR: {
+    int segmentCount = spawnOpts.laneCount / 2 + 1;
+    for (int i = 0; i < segmentCount; i++) {
+      addEntityToPattern(&pattern, prop, false, shader,
+                         spawnOpts.airY - laneHalfHeight);
+    }
+
+    break;
+  }
+
+  case SpawnPatternType::DOUBLE_WALL: {
+    int segmentCount = spawnOpts.laneCount / 2 + 1;
+    for (int i = 0; i < segmentCount; i++) {
+      addEntityToPattern(&pattern, prop, false, shader,
+                         laneHalfHeight);
+      addEntityToPattern(&pattern, prop, false, shader,
+                         spawnOpts.airY - laneHalfHeight);
     }
 
     break;
@@ -168,16 +196,18 @@ SpawnPattern *ObstacleSpawner::findInactive(SpawnPatternType type) {
 }
 
 SpawnPatternType ObstacleSpawner::pickPatternType() {
-  float singleWeight = 1.0f - 0.5f * difficulty; // 1.0 -> 0.5
-  float bigWeight = 0.3f + 0.4f * difficulty;    // 0.3 -> 0.7
-  float wallWeight = 0.1f + 0.6f * difficulty;   // 0.1 -> 0.7
+  float singleWeight = 1.0f - 0.5f * difficulty;
+  float bigWeight = 0.4f + 0.3f * difficulty;
+  float wallWeight = 0.2f + 0.4f * difficulty;
+  float doubleWallWeight = 0.05f + 0.3f * difficulty;
 
-  float total = singleWeight + bigWeight + wallWeight;
+  float total =
+      singleWeight + bigWeight + wallWeight + doubleWallWeight;
   std::uniform_real_distribution<float> dist(0.0f, total);
   float roll = dist(rng);
 
   if (roll < singleWeight) {
-    float airChance = 0.3f + 0.3f * difficulty; // 0.3 -> 0.6
+    float airChance = 0.3f + 0.3f * difficulty;
     std::uniform_real_distribution<float> airDist(0.0f, 1.0f);
     return airDist(rng) < airChance ? SpawnPatternType::SINGLE_AIR
                                     : SpawnPatternType::SINGLE_GROUND;
@@ -185,10 +215,21 @@ SpawnPatternType ObstacleSpawner::pickPatternType() {
 
   roll -= singleWeight;
   if (roll < bigWeight) {
-    return SpawnPatternType::BIG;
+    float airChance = 0.2f + 0.3f * difficulty;
+    std::uniform_real_distribution<float> airDist(0.0f, 1.0f);
+    return airDist(rng) < airChance ? SpawnPatternType::BIG_AIR
+                                    : SpawnPatternType::BIG_GROUND;
   }
 
-  return SpawnPatternType::WALL;
+  roll -= bigWeight;
+  if (roll < wallWeight) {
+    float airChance = 0.1f + 0.3f * difficulty;
+    std::uniform_real_distribution<float> airDist(0.0f, 1.0f);
+    return airDist(rng) < airChance ? SpawnPatternType::WALL_AIR
+                                    : SpawnPatternType::WALL_GROUND;
+  }
+
+  return SpawnPatternType::DOUBLE_WALL;
 }
 
 float ObstacleSpawner::laneCenterX(int laneIndex) const {
@@ -223,11 +264,14 @@ float ObstacleSpawner::getDespawnDistance(SpawnPatternType type) {
   switch (type) {
   case SpawnPatternType::SINGLE_GROUND:
   case SpawnPatternType::SINGLE_AIR:
-  case SpawnPatternType::WALL: {
+  case SpawnPatternType::WALL_GROUND:
+  case SpawnPatternType::WALL_AIR:
+  case SpawnPatternType::DOUBLE_WALL: {
     distance += maxLaneObsSizeZ;
   }
 
-  case SpawnPatternType::BIG: {
+  case SpawnPatternType::BIG_GROUND:
+  case SpawnPatternType::BIG_AIR: {
     distance += maxBigObsSizeZ;
   }
   }
@@ -242,6 +286,8 @@ void ObstacleSpawner::spawnAt(float z) {
   if (!pattern)
     return;
 
+  int segmentCount = spawnOpts.laneCount / 2 + 1;
+
   switch (type) {
   case SpawnPatternType::SINGLE_GROUND:
   case SpawnPatternType::SINGLE_AIR: {
@@ -251,8 +297,8 @@ void ObstacleSpawner::spawnAt(float z) {
     break;
   }
 
-  case SpawnPatternType::WALL: {
-    int segmentCount = static_cast<int>(pattern->entities.size());
+  case SpawnPatternType::WALL_GROUND:
+  case SpawnPatternType::WALL_AIR: {
     int maxStart = std::max(0, spawnOpts.laneCount - segmentCount);
     std::uniform_int_distribution<int> startDist(0, maxStart);
     int startLane = startDist(rng);
@@ -263,7 +309,22 @@ void ObstacleSpawner::spawnAt(float z) {
     break;
   }
 
-  case SpawnPatternType::BIG: {
+  case SpawnPatternType::DOUBLE_WALL: {
+    int maxStart = std::max(0, spawnOpts.laneCount - segmentCount);
+    std::uniform_int_distribution<int> startDist(0, maxStart);
+    int startLane = startDist(rng);
+
+    for (int i = 0; i < segmentCount; ++i) {
+      pattern->entities[2 * i].xOffset = laneCenterX(startLane + i);
+      pattern->entities[(2 * i) + 1].xOffset =
+          laneCenterX(startLane + i);
+    }
+
+    break;
+  }
+
+  case SpawnPatternType::BIG_GROUND:
+  case SpawnPatternType::BIG_AIR: {
     std::uniform_int_distribution<int> boundaryDist(
         0, spawnOpts.laneCount - 2);
     pattern->entities[0].xOffset = laneBoundaryX(boundaryDist(rng));
