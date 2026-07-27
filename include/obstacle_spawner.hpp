@@ -21,7 +21,7 @@
 
 #define OBSTACLE_SPAWN_SAFE_MARGIN_Z 320.0f
 #define OBSTACLE_INIT_NEXT_SPAWN_Z -50.0f
-#define OBSTACLE_HIGH_ALTITUDE_Y 5.0f
+#define OBSTACLE_HIGH_ALTITUDE_Y 10.0f
 
 #define OBSTACLE_POOL_SIZE 10
 
@@ -170,7 +170,7 @@ public:
 
 private:
   static constexpr float despawnDistance = 4.0f;
-  static constexpr int maxSegmentCount = 5;
+  static constexpr int maxSegmentCount = 4;
   static constexpr std::array patternTypes = {
       SpawnPatternType::SINGLE_LOW_ALT,
       SpawnPatternType::SINGLE_HIGH_ALT,

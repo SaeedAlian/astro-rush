@@ -18,8 +18,8 @@ namespace {
  */
 float getAltitudeAcceleration(float y, float maxAccel,
                               float peakHeight) {
-  float sigma = 2.0f;
-  float curveCenter = peakHeight * 0.6f;
+  float sigma = 3.0f;
+  float curveCenter = peakHeight * 0.5f;
   float diff = y - curveCenter;
   float factor = std::exp(-(diff * diff) / (2.0f * sigma * sigma));
   return maxAccel * factor;

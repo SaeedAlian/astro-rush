@@ -7,15 +7,17 @@
 
 #include <GLFW/glfw3.h>
 
+#include <imgui.h>
+
 #include <memory>
 
 #define GAME_INIT_FAILED -1
 #define GAME_INIT_SUCCESS 1
 
-#define GAME_LANE_COUNT 3
-#define GAME_LANE_WIDTH 2.5f
+#define GAME_LANE_COUNT 10
+#define GAME_LANE_WIDTH 3.5f
 
-#define GAME_DIFFICULTY_RAMP_DURATION 240.0f
+#define GAME_DIFFICULTY_RAMP_DURATION 120.0f
 
 #define GAME_SKYBOX_INIT_ROTATION_SPEED 0.5f
 #define GAME_SKYBOX_MAX_ROTATION_SPEED 1.0f
@@ -29,6 +31,16 @@
 #define GAME_SKYBOX_MODEL_DOWN_FACE_PATH "models/skybox/down.png"
 #define GAME_SKYBOX_MODEL_FRONT_FACE_PATH "models/skybox/front.png"
 #define GAME_SKYBOX_MODEL_BACK_FACE_PATH "models/skybox/back.png"
+
+#define GAME_FONT_PATH "fonts/toxigenesis/toxigenesis.otf"
+
+enum class GameState {
+  Loading,
+  MainMenu,
+  Playing,
+  Paused,
+  GameOver,
+};
 
 struct GameOptions {
   const char *title = "Endless Runner";
@@ -53,7 +65,11 @@ private:
   static constexpr float maxSkyboxRotationSpeed =
       glm::radians(GAME_SKYBOX_MAX_ROTATION_SPEED);
 
-  const unsigned int width, height;
+  ImFont *hudFont = nullptr;
+  float baseFontSize = 18.0f;
+
+  const unsigned int refWidth, refHeight;
+  unsigned int width, height;
   const char *title;
 
   const float roadWidth;       // the full width of the road
@@ -65,12 +81,20 @@ private:
   float lastFrameTime = 0.0f;
 
   int score = 0;
+  int finalScore = 0;
   int health = maxHealth;
   float invulTimer = 0.0f;
 
   float skyboxRotation = 0.0f;
   float skyboxRotationSpeed =
       glm::radians(GAME_SKYBOX_INIT_ROTATION_SPEED);
+
+  GameState state = GameState::Loading;
+
+  float loadProgress = 0.0f;
+  std::string loadStatusText = "Loading...";
+
+  bool pauseKeyWasDown = false;
 
   GLFWwindow *wnd = nullptr;
 
@@ -87,6 +111,10 @@ private:
   void initHud();
   void initSkybox();
 
+  void assetsStepLoading();
+
+  void rotateSkybox(float speed);
+
   void processInput();
   void update();
   void render();
@@ -94,6 +122,22 @@ private:
   void renderSkybox(const glm::mat4 &view,
                     const glm::mat4 &projection);
   void shutdownHud();
+
+  float hudScale() const;
+
+  void renderHudScore(ImGuiWindowFlags flags, ImVec2 position,
+                      ImVec2 pivot);
+  void renderHudPlayerStats(ImGuiWindowFlags flags, ImVec2 position,
+                            ImVec2 pivot);
+
+  void renderLoadingScreen();
+  void renderMainMenu();
+  void renderPauseMenu();
+  void renderGameOverMenu();
+
+  void startNewGame();
+  void togglePause();
+  void updateWindowSize();
 
   void handleCollision();
 };
