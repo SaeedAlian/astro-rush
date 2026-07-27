@@ -7,6 +7,15 @@
 
 namespace {
 
+/*
+ * A bell curve to determine the altitude acceleration.
+ *
+ * @param y | the y axis position
+ * @param maxAccel | maximum altitude acceleration which the player
+ * can have
+ * @param peakHeight | maximum height (y coord) which the player can
+ * reach
+ */
 float getAltitudeAcceleration(float y, float maxAccel,
                               float peakHeight) {
   float sigma = 2.0f;
@@ -18,12 +27,10 @@ float getAltitudeAcceleration(float y, float maxAccel,
 
 } // namespace
 
-Player::Player(const PlayerOptions options, Shader *shader,
-               const float strafeLimit)
-    : opts(options), strafeLimit(strafeLimit),
-      moveVel(options.initMoveVelocity), vertVel(0.0f),
-      altitudeAccel(options.initAltitudeAcceleration),
-      strafeVel(options.initStrafeVelocity) {
+Player::Player(Shader *shader, const float strafeLimit)
+    : strafeLimit(strafeLimit), moveVel(PLAYER_INIT_MOVE_VELOCITY),
+      vertVel(0.0f), altitudeAccel(PLAYER_INIT_ALTITUDE_ACCEL),
+      strafeVel(PLAYER_INIT_STRAFE_VELOCITY) {
 
   bounds = std::make_unique<MeshBounds>();
 
@@ -32,14 +39,14 @@ Player::Player(const PlayerOptions options, Shader *shader,
   glm::vec3 size = bounds->size();
   glm::vec3 center = bounds->center();
 
-  auto scale = glm::vec3(opts.scale, opts.scale,
-                         opts.flipZ ? -opts.scale : opts.scale);
+  auto scale = glm::vec3(playerScale, playerScale,
+                         playerFlipZ ? -playerScale : playerScale);
 
   scaledSize = glm::abs(size * scale);
   glm::vec3 scaledCenter = center * scale;
 
   lowAltY = scaledSize.y * 0.5f;
-  highAltY = opts.maxAltitude - scaledSize.y * 0.5f;
+  highAltY = maxAltitude - scaledSize.y * 0.5f;
 
   std::vector<ObjectPart> objParts;
 
@@ -136,7 +143,7 @@ void Player::changeAltitude() {
   }
 
   vertVel = 0.0f;
-  altChangeTimer = noAltChangeDuration;
+  altChangeTimer = PLAYER_NO_ALTITUDE_CHANGE_DURATION;
 }
 
 void Player::accelerate() {
@@ -146,7 +153,7 @@ void Player::accelerate() {
 
   moveAccel = PLAYER_MOVE_ACCELERATION;
   strafeAccel = PLAYER_STRAFE_ACCELERATION;
-  accelerationTimer = accelerationDuration;
+  accelerationTimer = PLAYER_ACCELERATION_DURATION;
 }
 
 void Player::decelerate() {
@@ -156,7 +163,7 @@ void Player::decelerate() {
 
   moveAccel = PLAYER_MOVE_DECELERATION;
   strafeAccel = PLAYER_STRAFE_DECELERATION;
-  accelerationTimer = accelerationDuration;
+  accelerationTimer = PLAYER_ACCELERATION_DURATION;
 }
 
 void Player::draw(const glm::mat4 &view,

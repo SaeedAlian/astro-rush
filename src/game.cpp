@@ -93,17 +93,7 @@ int Game::initialize() {
 }
 
 void Game::initPlayer() {
-  PlayerOptions opts;
-
-  opts.initMoveVelocity = GAME_PLAYER_INIT_MOVE_VELOCITY;
-  opts.initStrafeVelocity = GAME_PLAYER_INIT_STRAFE_VELOCITY;
-  opts.initAltitudeAcceleration = GAME_PLAYER_INIT_ALTITUDE_ACCEL;
-  opts.maxAltitude = GAME_PLAYER_MAX_ALTITUDE;
-  opts.scale = GAME_PLAYER_SCALE;
-  opts.flipZ = false;
-
-  player =
-      std::make_unique<Player>(opts, shader.get(), roadStrafeLimit);
+  player = std::make_unique<Player>(shader.get(), roadStrafeLimit);
 }
 
 void Game::initRoad() {
@@ -126,36 +116,9 @@ void Game::initRoad() {
 }
 
 void Game::initObstacles() {
-  ObstacleOptions obstacleOpts;
-  ObstacleSpawnOptions spawnOpts;
-
-  obstacleOpts.obstacleScale = GAME_OBSTACLE_SCALE;
-  obstacleOpts.obstaclePadding = GAME_OBSTACLE_PADDING;
-  obstacleOpts.bigObstacleScaleMultiplier =
-      GAME_OBSTACLE_BIG_SCALE_MULTIPLIER;
-
-  spawnOpts.initNextSpawnZ = GAME_OBSTACLE_INIT_NEXT_SPAWN_Z;
-  spawnOpts.spawnSafeMarginZ = GAME_SPAWN_SAFE_MARGIN_Z;
-
-  spawnOpts.minSpawnIntervalEasiest =
-      GAME_OBSTACLE_MIN_SPAWN_INTERVAL_EASY;
-  spawnOpts.maxSpawnIntervalEasiest =
-      GAME_OBSTACLE_MAX_SPAWN_INTERVAL_EASY;
-
-  spawnOpts.minSpawnIntervalHardest =
-      GAME_OBSTACLE_MIN_SPAWN_INTERVAL_HARD;
-  spawnOpts.maxSpawnIntervalHardest =
-      GAME_OBSTACLE_MAX_SPAWN_INTERVAL_HARD;
-
-  spawnOpts.rampDuration = GAME_DIFFICULTY_RAMP_DURATION;
-  spawnOpts.laneCount = GAME_LANE_COUNT;
-  spawnOpts.laneWidth = GAME_LANE_WIDTH;
-  spawnOpts.poolSizePerPattern = GAME_OBSTACLE_POOL_SIZE;
-
-  spawnOpts.airY = GAME_OBSTACLE_AIR_Y;
-
   obstacleSpawner = std::make_unique<ObstacleSpawner>(
-      obstacleOpts, spawnOpts, shader.get());
+      shader.get(), GAME_DIFFICULTY_RAMP_DURATION, GAME_LANE_COUNT,
+      GAME_LANE_WIDTH);
 }
 
 void Game::initHud() {

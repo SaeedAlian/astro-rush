@@ -7,11 +7,11 @@
 #include <limits>
 #include <random>
 
-ObstacleSpawner::ObstacleSpawner(ObstacleOptions obstacleOptions,
-                                 ObstacleSpawnOptions spawnOptions,
-                                 Shader *shader)
-    : obstacleOpts(obstacleOptions), spawnOpts(spawnOptions),
-      nextSpawnZ(spawnOptions.initNextSpawnZ) {
+ObstacleSpawner::ObstacleSpawner(Shader *shader, float rampDuration,
+                                 int laneCount, float laneWidth)
+    : nextSpawnZ(OBSTACLE_INIT_NEXT_SPAWN_Z),
+      rampDuration(rampDuration), laneCount(laneCount),
+      laneWidth(laneWidth) {
 
   for (const auto &path : obstacleObjs) {
     loadObstacle(path);
@@ -32,9 +32,9 @@ ObstacleSpawner::ObstacleSpawner(ObstacleOptions obstacleOptions,
 
   for (const auto type : patternTypes) {
     auto &pool = poolByPattern[type];
-    pool.reserve(spawnOpts.poolSizePerPattern);
+    pool.reserve(poolSizePerPattern);
 
-    for (int i = 0; i < spawnOpts.poolSizePerPattern; ++i) {
+    for (int i = 0; i < poolSizePerPattern; ++i) {
       pool.push_back(
           std::make_unique<SpawnPattern>(makePattern(type, shader)));
     }
@@ -47,23 +47,15 @@ void ObstacleSpawner::loadObstacle(const std::string &path) {
 
   glm::vec3 size = bounds->size();
 
-  float laneWidth =
-      spawnOpts.laneWidth - obstacleOpts.obstaclePadding;
+  float laneObsWidth = laneWidth - obsPadding;
+  float bigObsWidth = (2.0f * laneWidth) - obsPadding;
 
-  float bigWidth =
-      (2.0f * spawnOpts.laneWidth) - obstacleOpts.obstaclePadding;
+  float laneX = laneObsWidth / size.x;
+  float bigX = bigObsWidth / size.x;
 
-  float laneX = laneWidth / size.x;
-  float bigX = bigWidth / size.x;
-
-  glm::vec3 laneScale(laneX, obstacleOpts.obstacleScale,
-                      obstacleOpts.obstacleScale);
-
-  glm::vec3 bigScale(bigX,
-                     obstacleOpts.obstacleScale *
-                         obstacleOpts.bigObstacleScaleMultiplier,
-                     obstacleOpts.obstacleScale *
-                         obstacleOpts.bigObstacleScaleMultiplier);
+  glm::vec3 laneScale(laneX, obsScale, obsScale);
+  glm::vec3 bigScale(bigX, obsScale * bigObsScaleMult,
+                     obsScale * bigObsScaleMult);
 
   glm::vec3 laneSize = glm::abs(size * laneScale);
   glm::vec3 bigSize = glm::abs(size * bigScale);
@@ -106,30 +98,30 @@ SpawnPattern ObstacleSpawner::makePattern(SpawnPatternType type,
 
   switch (type) {
 
-  case SpawnPatternType::SINGLE_GROUND: {
+  case SpawnPatternType::SINGLE_LOW_ALT: {
     addEntityToPattern(&pattern, prop, false, shader, laneHalfHeight);
     break;
   }
 
-  case SpawnPatternType::BIG_GROUND: {
+  case SpawnPatternType::BIG_LOW_ALT: {
     addEntityToPattern(&pattern, prop, true, shader, bigHalfHeight);
     break;
   }
 
-  case SpawnPatternType::BIG_AIR: {
+  case SpawnPatternType::BIG_HIGH_ALT: {
     addEntityToPattern(&pattern, prop, true, shader,
-                       spawnOpts.airY - bigHalfHeight);
+                       highAltY - bigHalfHeight);
     break;
   }
 
-  case SpawnPatternType::SINGLE_AIR: {
+  case SpawnPatternType::SINGLE_HIGH_ALT: {
     addEntityToPattern(&pattern, prop, false, shader,
-                       spawnOpts.airY - laneHalfHeight);
+                       highAltY - laneHalfHeight);
     break;
   }
 
-  case SpawnPatternType::WALL_GROUND: {
-    int segmentCount = spawnOpts.laneCount / 2 + 1;
+  case SpawnPatternType::WALL_LOW_ALT: {
+    int segmentCount = laneCount / 2 + 1;
     for (int i = 0; i < segmentCount; i++) {
       addEntityToPattern(&pattern, prop, false, shader,
                          laneHalfHeight);
@@ -138,23 +130,23 @@ SpawnPattern ObstacleSpawner::makePattern(SpawnPatternType type,
     break;
   }
 
-  case SpawnPatternType::WALL_AIR: {
-    int segmentCount = spawnOpts.laneCount / 2 + 1;
+  case SpawnPatternType::WALL_HIGH_ALT: {
+    int segmentCount = laneCount / 2 + 1;
     for (int i = 0; i < segmentCount; i++) {
       addEntityToPattern(&pattern, prop, false, shader,
-                         spawnOpts.airY - laneHalfHeight);
+                         highAltY - laneHalfHeight);
     }
 
     break;
   }
 
   case SpawnPatternType::DOUBLE_WALL: {
-    int segmentCount = spawnOpts.laneCount / 2 + 1;
+    int segmentCount = laneCount / 2 + 1;
     for (int i = 0; i < segmentCount; i++) {
       addEntityToPattern(&pattern, prop, false, shader,
                          laneHalfHeight);
       addEntityToPattern(&pattern, prop, false, shader,
-                         spawnOpts.airY - laneHalfHeight);
+                         highAltY - laneHalfHeight);
     }
 
     break;
@@ -207,51 +199,53 @@ SpawnPatternType ObstacleSpawner::pickPatternType() {
   float roll = dist(rng);
 
   if (roll < singleWeight) {
-    float airChance = 0.3f + 0.3f * difficulty;
-    std::uniform_real_distribution<float> airDist(0.0f, 1.0f);
-    return airDist(rng) < airChance ? SpawnPatternType::SINGLE_AIR
-                                    : SpawnPatternType::SINGLE_GROUND;
+    float highAltChance = 0.3f + 0.3f * difficulty;
+    std::uniform_real_distribution<float> highAltDist(0.0f, 1.0f);
+    return highAltDist(rng) < highAltChance
+               ? SpawnPatternType::SINGLE_HIGH_ALT
+               : SpawnPatternType::SINGLE_LOW_ALT;
   }
 
   roll -= singleWeight;
   if (roll < bigWeight) {
-    float airChance = 0.2f + 0.3f * difficulty;
-    std::uniform_real_distribution<float> airDist(0.0f, 1.0f);
-    return airDist(rng) < airChance ? SpawnPatternType::BIG_AIR
-                                    : SpawnPatternType::BIG_GROUND;
+    float highAltChance = 0.2f + 0.3f * difficulty;
+    std::uniform_real_distribution<float> highAltDist(0.0f, 1.0f);
+    return highAltDist(rng) < highAltChance
+               ? SpawnPatternType::BIG_HIGH_ALT
+               : SpawnPatternType::BIG_LOW_ALT;
   }
 
   roll -= bigWeight;
   if (roll < wallWeight) {
-    float airChance = 0.1f + 0.3f * difficulty;
-    std::uniform_real_distribution<float> airDist(0.0f, 1.0f);
-    return airDist(rng) < airChance ? SpawnPatternType::WALL_AIR
-                                    : SpawnPatternType::WALL_GROUND;
+    float highAltChance = 0.1f + 0.3f * difficulty;
+    std::uniform_real_distribution<float> highAltDist(0.0f, 1.0f);
+    return highAltDist(rng) < highAltChance
+               ? SpawnPatternType::WALL_HIGH_ALT
+               : SpawnPatternType::WALL_LOW_ALT;
   }
 
   return SpawnPatternType::DOUBLE_WALL;
 }
 
 float ObstacleSpawner::laneCenterX(int laneIndex) const {
-  return (static_cast<float>(laneIndex) -
-          (spawnOpts.laneCount - 1) * 0.5f) *
-         spawnOpts.laneWidth;
+  return (static_cast<float>(laneIndex) - (laneCount - 1) * 0.5f) *
+         laneWidth;
 }
 
 float ObstacleSpawner::laneBoundaryX(int boundaryIndex) const {
-  return laneCenterX(boundaryIndex) + spawnOpts.laneWidth * 0.5f;
+  return laneCenterX(boundaryIndex) + laneWidth * 0.5f;
 }
 
 float ObstacleSpawner::pickSpawnInterval() {
-  float minInterval = spawnOpts.minSpawnIntervalEasiest +
-                      (spawnOpts.minSpawnIntervalHardest -
-                       spawnOpts.minSpawnIntervalEasiest) *
-                          difficulty;
+  float minInterval =
+      minSpawnIntervalEasiest +
+      (minSpawnIntervalHardest - minSpawnIntervalEasiest) *
+          difficulty;
 
-  float maxInterval = spawnOpts.maxSpawnIntervalEasiest +
-                      (spawnOpts.maxSpawnIntervalHardest -
-                       spawnOpts.maxSpawnIntervalEasiest) *
-                          difficulty;
+  float maxInterval =
+      maxSpawnIntervalEasiest +
+      (maxSpawnIntervalHardest - maxSpawnIntervalEasiest) *
+          difficulty;
 
   std::uniform_real_distribution<float> dist(minInterval,
                                              maxInterval);
@@ -262,16 +256,16 @@ float ObstacleSpawner::getDespawnDistance(SpawnPatternType type) {
   float distance = despawnDistance;
 
   switch (type) {
-  case SpawnPatternType::SINGLE_GROUND:
-  case SpawnPatternType::SINGLE_AIR:
-  case SpawnPatternType::WALL_GROUND:
-  case SpawnPatternType::WALL_AIR:
+  case SpawnPatternType::SINGLE_LOW_ALT:
+  case SpawnPatternType::SINGLE_HIGH_ALT:
+  case SpawnPatternType::WALL_LOW_ALT:
+  case SpawnPatternType::WALL_HIGH_ALT:
   case SpawnPatternType::DOUBLE_WALL: {
     distance += maxLaneObsSizeZ;
   }
 
-  case SpawnPatternType::BIG_GROUND:
-  case SpawnPatternType::BIG_AIR: {
+  case SpawnPatternType::BIG_LOW_ALT:
+  case SpawnPatternType::BIG_HIGH_ALT: {
     distance += maxBigObsSizeZ;
   }
   }
@@ -286,20 +280,19 @@ void ObstacleSpawner::spawnAt(float z) {
   if (!pattern)
     return;
 
-  int segmentCount = spawnOpts.laneCount / 2 + 1;
+  int segmentCount = laneCount / 2 + 1;
 
   switch (type) {
-  case SpawnPatternType::SINGLE_GROUND:
-  case SpawnPatternType::SINGLE_AIR: {
-    std::uniform_int_distribution<int> laneDist(
-        0, spawnOpts.laneCount - 1);
+  case SpawnPatternType::SINGLE_LOW_ALT:
+  case SpawnPatternType::SINGLE_HIGH_ALT: {
+    std::uniform_int_distribution<int> laneDist(0, laneCount - 1);
     pattern->entities[0].xOffset = laneCenterX(laneDist(rng));
     break;
   }
 
-  case SpawnPatternType::WALL_GROUND:
-  case SpawnPatternType::WALL_AIR: {
-    int maxStart = std::max(0, spawnOpts.laneCount - segmentCount);
+  case SpawnPatternType::WALL_LOW_ALT:
+  case SpawnPatternType::WALL_HIGH_ALT: {
+    int maxStart = std::max(0, laneCount - segmentCount);
     std::uniform_int_distribution<int> startDist(0, maxStart);
     int startLane = startDist(rng);
 
@@ -310,7 +303,7 @@ void ObstacleSpawner::spawnAt(float z) {
   }
 
   case SpawnPatternType::DOUBLE_WALL: {
-    int maxStart = std::max(0, spawnOpts.laneCount - segmentCount);
+    int maxStart = std::max(0, laneCount - segmentCount);
     std::uniform_int_distribution<int> startDist(0, maxStart);
     int startLane = startDist(rng);
 
@@ -323,10 +316,9 @@ void ObstacleSpawner::spawnAt(float z) {
     break;
   }
 
-  case SpawnPatternType::BIG_GROUND:
-  case SpawnPatternType::BIG_AIR: {
-    std::uniform_int_distribution<int> boundaryDist(
-        0, spawnOpts.laneCount - 2);
+  case SpawnPatternType::BIG_LOW_ALT:
+  case SpawnPatternType::BIG_HIGH_ALT: {
+    std::uniform_int_distribution<int> boundaryDist(0, laneCount - 2);
     pattern->entities[0].xOffset = laneBoundaryX(boundaryDist(rng));
     break;
   }
@@ -359,9 +351,9 @@ void ObstacleSpawner::render(const glm::mat4 &view,
 
 void ObstacleSpawner::update(float playerZ, float deltaTime) {
   elapsedTime += deltaTime;
-  difficulty = std::min(elapsedTime / spawnOpts.rampDuration, 1.0f);
+  difficulty = std::min(elapsedTime / rampDuration, 1.0f);
 
-  while (nextSpawnZ > playerZ - spawnOpts.spawnSafeMarginZ) {
+  while (nextSpawnZ > playerZ - spawnSafeMarginZ) {
     spawnAt(nextSpawnZ);
     nextSpawnZ -= pickSpawnInterval();
   }
@@ -393,6 +385,7 @@ const Obstacle *ObstacleSpawner::checkCollision(
       for (const auto &entity : pattern->entities) {
         if (collides(entity.obstacle->getCollider(),
                      playerCollider)) {
+          pattern->active = false;
           return entity.obstacle.get();
         }
       }
