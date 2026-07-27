@@ -14,6 +14,10 @@ A 3D space endless runner game built with **C++ and OpenGL**.
 - Custom Dear ImGui-based HUD and menus
 - Asset loading screen
 
+## Screenshots
+
+![Gameplay](screenshots/screenshot1.jpg)
+
 ## Controls
 
 | Key   | Action                    |
