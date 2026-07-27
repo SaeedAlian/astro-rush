@@ -166,6 +166,11 @@ public:
   void draw(const glm::mat4 &view, const glm::mat4 &projection) const;
 
   /*
+   * Resets all the properties of the player.
+   */
+  void reset();
+
+  /*
    * Creates and returns the current collider of the player.
    *
    * @return player collider

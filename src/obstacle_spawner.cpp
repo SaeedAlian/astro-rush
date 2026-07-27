@@ -272,6 +272,20 @@ float ObstacleSpawner::getDespawnDistance(SpawnPatternType type) {
   return distance;
 }
 
+void ObstacleSpawner::reset() {
+  nextSpawnZ = OBSTACLE_INIT_NEXT_SPAWN_Z;
+  elapsedTime = 0.0f;
+  difficulty = 0.0f;
+
+  for (const auto type : patternTypes) {
+    for (auto &pattern : poolByPattern.at(type)) {
+      if (pattern->active) {
+        pattern->active = false;
+      }
+    }
+  }
+}
+
 void ObstacleSpawner::spawnAt(float z) {
   SpawnPatternType type = pickPatternType();
 

@@ -159,6 +159,11 @@ public:
               const glm::mat4 &projection) const;
 
   /*
+   * Resets all the spawner properties.
+   */
+  void reset();
+
+  /*
    * Checks collision between the player and active obstacles.
    *
    * @param playerCollider | player collision shape

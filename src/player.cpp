@@ -116,6 +116,31 @@ CrossBoxCollider Player::getCollider() const {
                           collider->secondaryBoxHalfExtents);
 }
 
+void Player::reset() {
+  x = 0.0f;
+  prevX = x;
+  y = lowAltY;
+  prevY = y;
+
+  object->rotationZ = 0.0f;
+  object->rotationX = 0.0f;
+  object->rotationY = 0.0f;
+  object->pos = glm::vec3(0.0f, y, 0.0f);
+
+  vertVel = 0.0f;
+  moveVel = PLAYER_INIT_MOVE_VELOCITY;
+  strafeVel = PLAYER_INIT_STRAFE_VELOCITY;
+
+  moveAccel = 0.0f;
+  strafeAccel = 0.0f;
+
+  rotationAngleX = 0.0f;
+  rotationAngleZ = 0.0f;
+
+  altChangeTimer = 0.0f;
+  accelerationTimer = 0.0f;
+}
+
 void Player::moveRight(float deltaTime) {
   x += strafeVel * deltaTime;
   if (x > strafeLimit) {

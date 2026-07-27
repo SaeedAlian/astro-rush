@@ -273,6 +273,9 @@ void Game::startNewGame() {
   health = maxHealth;
   invulTimer = 0.0f;
 
+  player->reset();
+  obstacleSpawner->reset();
+
   lastFrameTime = static_cast<float>(glfwGetTime());
 
   state = GameState::Playing;
