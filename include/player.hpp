@@ -183,6 +183,11 @@ public:
   float getMoveVelocity() const { return moveVel; };
 
   /*
+   * @return movement acceleration
+   */
+  float getMoveAcceleration() const { return moveAccel; };
+
+  /*
    * @return reference to the player object
    */
   Object &getObject() { return *object.get(); }
