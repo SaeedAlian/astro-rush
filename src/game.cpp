@@ -6,6 +6,7 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <algorithm>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -15,6 +16,8 @@
 
 #include <iostream>
 #include <memory>
+
+namespace {
 
 void drawHeart(ImDrawList *drawList, ImVec2 topLeft, float size,
                ImU32 color) {
@@ -33,6 +36,8 @@ void drawHeart(ImDrawList *drawList, ImVec2 topLeft, float size,
   drawList->AddTriangleFilled(p1, p2, p3, color);
 }
 
+} // namespace
+
 Game::Game(GameOptions opts)
     : title(opts.title), width(opts.width), height(opts.height),
       roadWidth(GAME_LANE_COUNT * GAME_LANE_WIDTH),
@@ -46,8 +51,8 @@ Game::Game(GameOptions opts)
 
   shader = std::make_unique<Shader>(vertexShader, fragmentShader);
 
+  initSkybox();
   initPlayer();
-  initRoad();
   initObstacles();
   initHud();
 }
@@ -96,25 +101,6 @@ void Game::initPlayer() {
   player = std::make_unique<Player>(shader.get(), roadStrafeLimit);
 }
 
-void Game::initRoad() {
-  roadSegmentMesh = std::make_unique<Mesh>(
-      Mesh::createPlane(roadWidth, GAME_ROAD_SEGMENT_LENGTH));
-
-  for (int i = 0; i < GAME_ROAD_SEGMENT_COUNT; ++i) {
-    auto color = (i % 2 == 0) ? glm::vec3(0.25f, 0.25f, 0.28f)
-                              : glm::vec3(0.3f, 0.3f, 0.33f);
-
-    auto segment = std::make_unique<Object>(
-        roadSegmentMesh.get(), color, nullptr, shader.get());
-
-    segment->pos =
-        glm::vec3(0.0f, 0.0f,
-                  -static_cast<float>(i) * GAME_ROAD_SEGMENT_LENGTH);
-
-    roadSegments.push_back(std::move(segment));
-  }
-}
-
 void Game::initObstacles() {
   obstacleSpawner = std::make_unique<ObstacleSpawner>(
       shader.get(), GAME_DIFFICULTY_RAMP_DURATION, GAME_LANE_COUNT,
@@ -131,22 +117,28 @@ void Game::initHud() {
   ImGui_ImplOpenGL3_Init("#version 330");
 }
 
+void Game::initSkybox() {
+  skyboxShader = std::make_unique<Shader>(
+      "shaders/skybox_vertex.glsl", "shaders/skybox_fragment.glsl");
+
+  skyboxMesh = std::make_unique<Mesh>(Mesh::createCube(1.0f));
+
+  std::vector<std::string> faces = {
+      GAME_SKYBOX_MODEL_RIGHT_FACE_PATH, // +X
+      GAME_SKYBOX_MODEL_LEFT_FACE_PATH,  // -X
+      GAME_SKYBOX_MODEL_UP_FACE_PATH,    // +Y
+      GAME_SKYBOX_MODEL_DOWN_FACE_PATH,  // -Y
+      GAME_SKYBOX_MODEL_FRONT_FACE_PATH, // +Z
+      GAME_SKYBOX_MODEL_BACK_FACE_PATH,  // -Z
+  };
+
+  skyboxTexture = Texture::loadCubemap(faces);
+}
+
 void Game::shutdownHud() {
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
-}
-
-void Game::recycleRoadSegments() {
-  float recycleThreshold =
-      player->getObject().pos.z + GAME_ROAD_SEGMENT_LENGTH;
-
-  for (auto &segment : roadSegments) {
-    if (segment->pos.z > recycleThreshold) {
-      segment->pos.z -=
-          GAME_ROAD_SEGMENT_COUNT * GAME_ROAD_SEGMENT_LENGTH;
-    }
-  }
 }
 
 void Game::handleCollision() {
@@ -180,7 +172,6 @@ void Game::update() {
 
   player->update(deltaTime);
   obstacleSpawner->update(player->getObject().pos.z, deltaTime);
-  recycleRoadSegments();
 
   if (invulTimer > 0.0f) {
     invulTimer -= deltaTime;
@@ -192,6 +183,42 @@ void Game::update() {
   handleCollision();
 
   score = static_cast<int>(-player->getObject().pos.z * scoreFactor);
+
+  skyboxRotationSpeed = std::clamp(
+      skyboxRotationSpeed +
+          (player->getMoveAcceleration() *
+           GAME_SKYBOX_ROTATION_SPEED_PLAYER_MOVE_ACCELERATION_MULTIPLIER *
+           deltaTime),
+      minSkyboxRotationSpeed, maxSkyboxRotationSpeed);
+
+  skyboxRotation += skyboxRotationSpeed * deltaTime;
+
+  if (skyboxRotation > glm::two_pi<float>()) {
+    skyboxRotation -= glm::two_pi<float>();
+  }
+}
+
+void Game::renderSkybox(const glm::mat4 &view,
+                        const glm::mat4 &projection) {
+  glDepthFunc(GL_LEQUAL);
+  glDepthMask(GL_FALSE);
+
+  glm::mat4 skyboxView = glm::mat4(glm::mat3(view));
+  glm::mat4 model = glm::rotate(glm::mat4(1.0f), skyboxRotation,
+                                glm::vec3(1.0f, 0.0f, 1.0f));
+
+  skyboxShader->use();
+  skyboxShader->setMat4("view", skyboxView);
+  skyboxShader->setMat4("projection", projection);
+  skyboxShader->setMat4("model", model);
+
+  skyboxTexture->bindCubemap(0);
+  skyboxShader->setInt("skybox", 0);
+
+  skyboxMesh->draw();
+
+  glDepthMask(GL_TRUE);
+  glDepthFunc(GL_LESS);
 }
 
 void Game::renderHud() {
@@ -247,24 +274,18 @@ void Game::render() {
 
   auto playerPos = player->getObject().pos;
 
-  glm::vec3 cameraPos =
-      glm::vec3(playerPos.x, 0.0f, playerPos.z) + cameraOffset;
-  glm::vec3 cameraTarget = glm::vec3(playerPos.x, 0.0f, playerPos.z) +
-                           glm::vec3(0.0f, 1.0f, -5.0f);
+  glm::vec3 cameraPos = playerPos + cameraOffset;
+  glm::vec3 cameraTarget = playerPos + glm::vec3(0.0f, -1.0f, -6.0f);
   glm::mat4 view =
       glm::lookAt(cameraPos, cameraTarget, glm::vec3(0, 1, 0));
   glm::mat4 projection = glm::perspective(
       glm::radians(60.0f), static_cast<float>(width) / height, 0.1f,
       300.0f);
 
-  for (auto &segment : roadSegments) {
-    segment->draw(view, projection);
-  }
+  renderSkybox(view, projection);
   player->draw(view, projection);
   obstacleSpawner->render(view, projection);
-
   renderHud();
-
   glfwSwapBuffers(wnd);
 }
 
@@ -292,7 +313,6 @@ void Game::processInput() {
 
   if (glfwGetKey(wnd, GLFW_KEY_SPACE) == GLFW_PRESS) {
     player->changeAltitude();
-  }
   }
 }
 
