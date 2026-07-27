@@ -23,7 +23,6 @@ set(SRC_FILES
     src/obstacle-spawner.cpp
     src/game.cpp
     src/texture.cpp
-    src/tinyobjloader.cpp
 )
 
 add_executable(endless-runner ${SRC_FILES})

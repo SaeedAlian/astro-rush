@@ -526,30 +526,6 @@ src/texture.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/texture.cpp.s
 .PHONY : src/texture.cpp.s
 
-src/tinyobjloader.o: src/tinyobjloader.cpp.o
-.PHONY : src/tinyobjloader.o
-
-# target to build an object file
-src/tinyobjloader.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/tinyobjloader.cpp.o
-.PHONY : src/tinyobjloader.cpp.o
-
-src/tinyobjloader.i: src/tinyobjloader.cpp.i
-.PHONY : src/tinyobjloader.i
-
-# target to preprocess a source file
-src/tinyobjloader.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/tinyobjloader.cpp.i
-.PHONY : src/tinyobjloader.cpp.i
-
-src/tinyobjloader.s: src/tinyobjloader.cpp.s
-.PHONY : src/tinyobjloader.s
-
-# target to generate assembly for a file
-src/tinyobjloader.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/tinyobjloader.cpp.s
-.PHONY : src/tinyobjloader.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -608,9 +584,6 @@ help:
 	@echo "... src/texture.o"
 	@echo "... src/texture.i"
 	@echo "... src/texture.s"
-	@echo "... src/tinyobjloader.o"
-	@echo "... src/tinyobjloader.i"
-	@echo "... src/tinyobjloader.s"
 .PHONY : help
 
 
