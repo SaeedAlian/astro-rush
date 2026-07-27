@@ -27,6 +27,7 @@ A 3D space endless runner game built with **C++ and OpenGL**.
 | ↓     | Decelerate                |
 | Space | Change altitude           |
 | Esc   | Pause game                |
+| F     | Toggle fullscreen         |
 
 ## Requirements
 
