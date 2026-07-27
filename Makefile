@@ -406,30 +406,6 @@ src/object.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/object.cpp.s
 .PHONY : src/object.cpp.s
 
-src/obstacle-spawner.o: src/obstacle-spawner.cpp.o
-.PHONY : src/obstacle-spawner.o
-
-# target to build an object file
-src/obstacle-spawner.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/obstacle-spawner.cpp.o
-.PHONY : src/obstacle-spawner.cpp.o
-
-src/obstacle-spawner.i: src/obstacle-spawner.cpp.i
-.PHONY : src/obstacle-spawner.i
-
-# target to preprocess a source file
-src/obstacle-spawner.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/obstacle-spawner.cpp.i
-.PHONY : src/obstacle-spawner.cpp.i
-
-src/obstacle-spawner.s: src/obstacle-spawner.cpp.s
-.PHONY : src/obstacle-spawner.s
-
-# target to generate assembly for a file
-src/obstacle-spawner.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/obstacle-spawner.cpp.s
-.PHONY : src/obstacle-spawner.cpp.s
-
 src/obstacle.o: src/obstacle.cpp.o
 .PHONY : src/obstacle.o
 
@@ -453,6 +429,30 @@ src/obstacle.s: src/obstacle.cpp.s
 src/obstacle.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/obstacle.cpp.s
 .PHONY : src/obstacle.cpp.s
+
+src/obstacle_spawner.o: src/obstacle_spawner.cpp.o
+.PHONY : src/obstacle_spawner.o
+
+# target to build an object file
+src/obstacle_spawner.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/obstacle_spawner.cpp.o
+.PHONY : src/obstacle_spawner.cpp.o
+
+src/obstacle_spawner.i: src/obstacle_spawner.cpp.i
+.PHONY : src/obstacle_spawner.i
+
+# target to preprocess a source file
+src/obstacle_spawner.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/obstacle_spawner.cpp.i
+.PHONY : src/obstacle_spawner.cpp.i
+
+src/obstacle_spawner.s: src/obstacle_spawner.cpp.s
+.PHONY : src/obstacle_spawner.s
+
+# target to generate assembly for a file
+src/obstacle_spawner.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/endless-runner.dir/build.make CMakeFiles/endless-runner.dir/src/obstacle_spawner.cpp.s
+.PHONY : src/obstacle_spawner.cpp.s
 
 src/player.o: src/player.cpp.o
 .PHONY : src/player.o
@@ -569,12 +569,12 @@ help:
 	@echo "... src/object.o"
 	@echo "... src/object.i"
 	@echo "... src/object.s"
-	@echo "... src/obstacle-spawner.o"
-	@echo "... src/obstacle-spawner.i"
-	@echo "... src/obstacle-spawner.s"
 	@echo "... src/obstacle.o"
 	@echo "... src/obstacle.i"
 	@echo "... src/obstacle.s"
+	@echo "... src/obstacle_spawner.o"
+	@echo "... src/obstacle_spawner.i"
+	@echo "... src/obstacle_spawner.s"
 	@echo "... src/player.o"
 	@echo "... src/player.i"
 	@echo "... src/player.s"

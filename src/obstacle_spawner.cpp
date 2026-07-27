@@ -1,4 +1,4 @@
-#include "obstacle-spawner.hpp"
+#include "obstacle_spawner.hpp"
 #include "collider.hpp"
 #include "collision.hpp"
 

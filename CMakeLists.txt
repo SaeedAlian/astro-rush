@@ -20,7 +20,7 @@ set(SRC_FILES
     src/collision.cpp
     src/player.cpp
     src/obstacle.cpp
-    src/obstacle-spawner.cpp
+    src/obstacle_spawner.cpp
     src/game.cpp
     src/texture.cpp
 )

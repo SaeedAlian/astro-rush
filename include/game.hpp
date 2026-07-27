@@ -2,7 +2,7 @@
 
 #include "mesh.hpp"
 #include "object.hpp"
-#include "obstacle-spawner.hpp"
+#include "obstacle_spawner.hpp"
 #include "player.hpp"
 #include "shader.hpp"
 

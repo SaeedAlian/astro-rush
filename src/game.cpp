@@ -1,7 +1,7 @@
 #include "game.hpp"
 #include "mesh.hpp"
 #include "object.hpp"
-#include "obstacle-spawner.hpp"
+#include "obstacle_spawner.hpp"
 #include "shader.hpp"
 
 #include <GL/glew.h>
