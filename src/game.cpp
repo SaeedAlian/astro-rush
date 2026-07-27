@@ -121,6 +121,8 @@ int Game::initialize() {
 
   wnd = window;
 
+  toggleFullscreen();
+
   glfwMakeContextCurrent(wnd);
 
   // vsync
@@ -264,6 +266,23 @@ void Game::rotateSkybox(float speed) {
 
   if (skyboxRotation > glm::two_pi<float>()) {
     skyboxRotation -= glm::two_pi<float>();
+  }
+}
+
+void Game::toggleFullscreen() {
+  static bool fullscreen = false;
+
+  fullscreen = !fullscreen;
+
+  if (fullscreen) {
+    const GLFWvidmode *mode =
+        glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+    glfwSetWindowMonitor(wnd, glfwGetPrimaryMonitor(), 0, 0,
+                         mode->width, mode->height,
+                         mode->refreshRate);
+  } else {
+    glfwSetWindowMonitor(wnd, nullptr, 0, 0, width, height, 0);
   }
 }
 
@@ -499,6 +518,7 @@ void Game::renderMainMenu() {
         "Up/Down arrows : Accelerate/Decelerate",
         "Space : Change altitude",
         "Esc : Pause",
+        "F : Fullscreen toggle",
     };
 
     for (const char *line : helpLines) {
@@ -778,6 +798,12 @@ void Game::processInput() {
     }
   }
   pauseKeyWasDown = escDown;
+
+  bool fDown = glfwGetKey(wnd, GLFW_KEY_F) == GLFW_PRESS;
+  if (fDown && !fullscreenKeyWasDown) {
+    toggleFullscreen();
+  }
+  fullscreenKeyWasDown = fDown;
 
   if (state != GameState::Playing) {
     return;

@@ -95,6 +95,7 @@ private:
   std::string loadStatusText = "Loading...";
 
   bool pauseKeyWasDown = false;
+  bool fullscreenKeyWasDown = false;
 
   GLFWwindow *wnd = nullptr;
 
@@ -134,6 +135,8 @@ private:
   void renderMainMenu();
   void renderPauseMenu();
   void renderGameOverMenu();
+
+  void toggleFullscreen();
 
   void startNewGame();
   void togglePause();
