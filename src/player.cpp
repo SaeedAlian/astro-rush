@@ -105,6 +105,8 @@ Player::Player(Shader *shader, const float strafeLimit)
 
   object = std::make_unique<Object>(std::move(objParts), shader);
   object->rotationZ = 0.0f;
+  object->rotationX = 0.0f;
+  object->rotationY = 0.0f;
   object->pos = glm::vec3(0.0f, y, 0.0f);
   object->scale = scale;
 }

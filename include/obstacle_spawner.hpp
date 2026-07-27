@@ -19,7 +19,7 @@
 #define OBSTACLE_MIN_SPAWN_INTERVAL_HARD 10.0f
 #define OBSTACLE_MAX_SPAWN_INTERVAL_HARD 25.0f
 
-#define OBSTACLE_SPAWN_SAFE_MARGIN_Z 320.0f
+#define OBSTACLE_SPAWN_SAFE_MARGIN_Z 420.0f
 #define OBSTACLE_INIT_NEXT_SPAWN_Z -50.0f
 #define OBSTACLE_HIGH_ALTITUDE_Y 10.0f
 
@@ -218,7 +218,7 @@ private:
 
   const float spawnSafeMarginZ = OBSTACLE_SPAWN_SAFE_MARGIN_Z;
 
-  float nextSpawnZ = 30.0f;
+  float nextSpawnZ = OBSTACLE_INIT_NEXT_SPAWN_Z;
 
   float elapsedTime = 0.0f;
   float difficulty = 0.0f; // 0 (easiest), 1 (hardest)
