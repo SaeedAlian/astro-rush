@@ -1,7 +1,9 @@
 #include "game.hpp"
 
 int main() {
-  Game g = Game(GameOptions{});
+  GameOptions opts;
+  opts.title = "Astro Rush";
+  Game g = Game(opts);
   g.run();
   return 0;
 }

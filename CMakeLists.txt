@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(EndlessRunner3D VERSION 0.0.1 LANGUAGES CXX)
+project(AstroRush VERSION 0.0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -25,7 +25,7 @@ set(SRC_FILES
     src/texture.cpp
 )
 
-add_executable(endless-runner ${SRC_FILES})
+add_executable(astro-rush ${SRC_FILES})
 
 add_library(imgui STATIC
     external/imgui/imgui.cpp
@@ -44,9 +44,9 @@ target_include_directories(imgui PUBLIC
 target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
 target_link_libraries(imgui PUBLIC glfw)
 
-target_include_directories(endless-runner PRIVATE include external/tinyobjloader external/stbimage)
+target_include_directories(astro-rush PRIVATE include external/tinyobjloader external/stbimage)
 
-target_link_libraries(endless-runner
+target_link_libraries(astro-rush
     OpenGL::GL
     GLEW::GLEW
     glfw
