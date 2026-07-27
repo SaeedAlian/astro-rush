@@ -1,6 +1,7 @@
 #include "obstacle.hpp"
 
 #include <glm/ext/vector_float3.hpp>
+#include <glm/gtc/constants.hpp>
 
 #include <random>
 
@@ -59,6 +60,11 @@ void Obstacle::rotateObjInDir(RotationDirection dir) {
 
 void Obstacle::rotateInPlace(float deltaTime) {
   rotationAngle += rotationSpeed * deltaTime;
+
+  if (rotationAngle > glm::two_pi<float>()) {
+    rotationAngle -= glm::two_pi<float>();
+  }
+
   rotateObjInDir(rotationFirstDir);
   rotateObjInDir(rotationSecondDir);
 }
