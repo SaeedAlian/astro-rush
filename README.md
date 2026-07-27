@@ -53,6 +53,7 @@ Install the required packages using pacman:
 ### 2. Clone the repository
 
     git clone https://github.com/SaeedAlian/astro-rush.git
+    git submodule update --init --recursive
     cd astro-rush
 
 ### 3. Build the project
@@ -97,6 +98,7 @@ Install required packages:
 ### 2. Clone the repository
 
     git clone https://github.com/SaeedAlian/astro-rush.git
+    git submodule update --init --recursive
     cd astro-rush
 
 ### 3. Build the project
@@ -137,6 +139,7 @@ Compile:
 ### 2. Clone the repository
 
     git clone https://github.com/SaeedAlian/astro-rush.git
+    git submodule update --init --recursive
     cd astro-rush
 
 ### 3. Build the project
