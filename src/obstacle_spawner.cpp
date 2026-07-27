@@ -4,6 +4,7 @@
 
 #include <glm/ext/vector_float3.hpp>
 
+#include <algorithm>
 #include <limits>
 #include <random>
 
@@ -11,7 +12,8 @@ ObstacleSpawner::ObstacleSpawner(Shader *shader, float rampDuration,
                                  int laneCount, float laneWidth)
     : nextSpawnZ(OBSTACLE_INIT_NEXT_SPAWN_Z),
       rampDuration(rampDuration), laneCount(laneCount),
-      laneWidth(laneWidth) {
+      laneWidth(laneWidth),
+      segmentCount(std::min((laneCount / 2) + 1, maxSegmentCount)) {
 
   for (const auto &path : obstacleObjs) {
     loadObstacle(path);
@@ -121,7 +123,6 @@ SpawnPattern ObstacleSpawner::makePattern(SpawnPatternType type,
   }
 
   case SpawnPatternType::WALL_LOW_ALT: {
-    int segmentCount = laneCount / 2 + 1;
     for (int i = 0; i < segmentCount; i++) {
       addEntityToPattern(&pattern, prop, false, shader,
                          laneHalfHeight);
@@ -131,7 +132,6 @@ SpawnPattern ObstacleSpawner::makePattern(SpawnPatternType type,
   }
 
   case SpawnPatternType::WALL_HIGH_ALT: {
-    int segmentCount = laneCount / 2 + 1;
     for (int i = 0; i < segmentCount; i++) {
       addEntityToPattern(&pattern, prop, false, shader,
                          highAltY - laneHalfHeight);
@@ -141,7 +141,6 @@ SpawnPattern ObstacleSpawner::makePattern(SpawnPatternType type,
   }
 
   case SpawnPatternType::DOUBLE_WALL: {
-    int segmentCount = laneCount / 2 + 1;
     for (int i = 0; i < segmentCount; i++) {
       addEntityToPattern(&pattern, prop, false, shader,
                          laneHalfHeight);
@@ -279,8 +278,6 @@ void ObstacleSpawner::spawnAt(float z) {
   SpawnPattern *pattern = findInactive(type);
   if (!pattern)
     return;
-
-  int segmentCount = laneCount / 2 + 1;
 
   switch (type) {
   case SpawnPatternType::SINGLE_LOW_ALT:

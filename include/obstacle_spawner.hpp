@@ -170,6 +170,7 @@ public:
 
 private:
   static constexpr float despawnDistance = 4.0f;
+  static constexpr int maxSegmentCount = 5;
   static constexpr std::array patternTypes = {
       SpawnPatternType::SINGLE_LOW_ALT,
       SpawnPatternType::SINGLE_HIGH_ALT,
@@ -190,6 +191,7 @@ private:
 
   const int laneCount;
   const float laneWidth, rampDuration;
+  const int segmentCount;
 
   const int poolSizePerPattern = OBSTACLE_POOL_SIZE;
 
